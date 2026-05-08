@@ -11,12 +11,20 @@ from promptbench.config.schema import LATEST_CONFIG_VERSION, PromptBenchConfig
 
 DEPRECATED_SETTINGS: dict[str, str] = {
     "providers.workflows.review.provider_kind": (
-        "Deprecated for routing behavior: review now falls back to "
-        "providers.workflows.judge. Keep review for primary reviewer and configure judge explicitly."
+        "Deprecated and ignored. Provider is inferred from model prefix "
+        "(<provider-id>/<model-name>). Remove this field."
     ),
     "providers.workflows.eval.provider_kind": (
-        "Deprecated for routing behavior: eval scoring now prefers providers.workflows.judge. "
-        "Configure judge explicitly for grading consistency."
+        "Deprecated and ignored. Provider is inferred from model prefix "
+        "(<provider-id>/<model-name>). Remove this field."
+    ),
+    "providers.workflows.judge.provider_kind": (
+        "Deprecated and ignored. Provider is inferred from model prefix "
+        "(<provider-id>/<model-name>). Remove this field."
+    ),
+    "providers.workflows.enhance.provider_kind": (
+        "Deprecated and ignored. Provider is inferred from model prefix "
+        "(<provider-id>/<model-name>). Remove this field."
     ),
 }
 
@@ -46,6 +54,20 @@ def _set_nested_default(data: dict[str, Any], path: str, value: Any) -> bool:
     return True
 
 
+def _remove_nested(data: dict[str, Any], path: str) -> bool:
+    keys = path.split(".")
+    node: Any = data
+    for key in keys[:-1]:
+        if not isinstance(node, dict) or key not in node:
+            return False
+        node = node[key]
+    leaf = keys[-1]
+    if not isinstance(node, dict) or leaf not in node:
+        return False
+    del node[leaf]
+    return True
+
+
 def _upgrade_v1_to_v2(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     changes: list[str] = []
 
@@ -53,8 +75,6 @@ def _upgrade_v1_to_v2(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         changes.append("added objects.instructions")
     if _set_nested_default(raw, "artifacts.instructions.root_path", "instructions/"):
         changes.append("added artifacts.instructions.root_path")
-    if _set_nested_default(raw, "providers.workflows.judge.provider_kind", "openai"):
-        changes.append("added providers.workflows.judge.provider_kind")
     if _set_nested_default(
         raw, "providers.workflows.judge.model", "openai/gpt-4.1-mini"
     ):
@@ -72,6 +92,12 @@ def _upgrade_v1_to_v2(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
 
     if _set_nested_default(raw, "policies.model_random_seed", None):
         changes.append("added policies.model_random_seed")
+
+    for workflow in ("review", "eval", "judge", "enhance"):
+        if _remove_nested(raw, f"providers.workflows.{workflow}.provider_kind"):
+            changes.append(
+                f"removed providers.workflows.{workflow}.provider_kind (deprecated)"
+            )
 
     raw["version"] = 2
     changes.append("set version=2")
@@ -98,6 +124,7 @@ def upgrade_config_file(
     if not isinstance(raw, dict):
         raise ValueError("Config must be a YAML object.")
 
+    warnings = collect_deprecation_warnings(raw)
     old_version = int(raw.get("version", 1))
     changes: list[str] = []
 
@@ -109,8 +136,6 @@ def upgrade_config_file(
         raise ValueError(
             f"Config version {old_version} is newer than supported version {LATEST_CONFIG_VERSION}."
         )
-
-    warnings = collect_deprecation_warnings(raw)
 
     cfg_path.write_text(
         yaml.safe_dump(raw, sort_keys=False, allow_unicode=False),

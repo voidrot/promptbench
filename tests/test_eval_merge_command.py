@@ -11,7 +11,7 @@ from promptbench.config.schema import ArtifactType, EvalTest
 def _write_config(path: Path) -> None:
     path.write_text(
         """
-version: 1
+version: 2
 project:
   name: test
   root: .
@@ -21,6 +21,7 @@ objects:
   prompts: {}
   agents: {}
   tools: {}
+  instructions: {}
 artifacts:
   prompts:
     root_path: prompts/
@@ -30,6 +31,8 @@ artifacts:
     root_path: agents/
   tools:
     root_path: tools/
+  instructions:
+    root_path: instructions/
 providers:
   default_kind: openai-compatible
   defaults:
@@ -43,8 +46,17 @@ providers:
       api_key_env: OPENAI_API_KEY
   workflows:
     eval:
-      provider_kind: openai
       model: openai/mock
+      randomize_model: false
+    judge:
+      model: openai/mock
+      randomize_model: false
+    review:
+      model: openai/mock
+      randomize_model: false
+    enhance:
+      model: openai/mock
+      randomize_model: false
 workflows:
   review:
     enabled: true
@@ -69,6 +81,7 @@ policies:
   fail_on_score_below: 0.7
   max_workers: 1
   require_model_success: false
+  model_random_seed: null
 """,
         encoding="utf-8",
     )

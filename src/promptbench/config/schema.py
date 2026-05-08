@@ -109,7 +109,6 @@ class ProviderConfig(BaseModel):
 
 
 class WorkflowProviderConfig(BaseModel):
-    provider_kind: str
     model: str
     fallback_models: list[str] | None = None
     randomize_model: bool = False

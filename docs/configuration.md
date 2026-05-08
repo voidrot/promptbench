@@ -116,24 +116,20 @@ providers:
 
   workflows:
     review:
-      provider_kind: openai-compatible
       model: openai/gpt-4o-mini           # Format: <registry_key>/<model_name>
       fallback_models:
         - openai/gpt-3.5-turbo
       randomize_model: false
     eval:
-      provider_kind: openai-compatible
       model: openai/gpt-4o-mini
       fallback_models: []
       randomize_model: false
     judge:
-      provider_kind: openai-compatible
       model: openai/gpt-4o-mini
       fallback_models:
         - openai/gpt-3.5-turbo
       randomize_model: false
     enhance:
-      provider_kind: openai-compatible
       model: openai/gpt-4o
       fallback_models:
         - openai/gpt-4o-mini
@@ -141,6 +137,8 @@ providers:
 ```
 
 **Model ID format:** `<registry_key>/<model_name>` — the registry key must match a key in `providers.registry`.
+
+`provider_kind` under `providers.workflows.*` is deprecated and ignored. Provider selection is inferred from the `model`/`fallback_models` prefixes.
 
 **Workflow model routing defaults:**
 - `review` workflow uses `providers.workflows.review`, then falls back to `providers.workflows.judge`

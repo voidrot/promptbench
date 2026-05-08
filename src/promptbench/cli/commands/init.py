@@ -51,22 +51,18 @@ providers:
       max_concurrency: 1
   workflows:
     review:
-      provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
       randomize_model: false
     eval:
-      provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
       randomize_model: false
     judge:
-      provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
       randomize_model: false
     enhance:
-      provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
       randomize_model: false

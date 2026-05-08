@@ -56,3 +56,4 @@ policies: {}
     assert "version: 2" in upgraded
     assert "judge:" in upgraded
     assert "model_random_seed: null" in upgraded
+    assert "provider_kind:" not in upgraded

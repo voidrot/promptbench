@@ -79,22 +79,18 @@ providers:
       api_key_env: LLMSTUDIO_API_KEY
   workflows:
     review:
-      provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
       randomize_model: false
     eval:
-      provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
       randomize_model: false
     judge:
-      provider_kind: llmstudio
       model: llmstudio/essentialai/rnj-1
       fallback_models: [llmstudio/nvidia/nemotron-3-nano-4b]
       randomize_model: false
     enhance:
-      provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
       randomize_model: false

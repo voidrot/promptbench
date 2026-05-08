@@ -25,7 +25,6 @@ def test_dynamic_concurrency_local_defaults_to_two() -> None:
     }
     cfg.providers.workflows = {
         "eval": WorkflowProviderConfig(
-            provider_kind="llmstudio",
             model="llmstudio/nvidia/nemotron-3-nano-4b",
             fallback_models=[],
         )
@@ -55,7 +54,6 @@ def test_dynamic_concurrency_uses_provider_cap() -> None:
     }
     cfg.providers.workflows = {
         "eval": WorkflowProviderConfig(
-            provider_kind="llmstudio",
             model="llmstudio/nvidia/nemotron-3-nano-4b",
             fallback_models=[],
         )
@@ -118,7 +116,6 @@ def test_model_chain_tries_primary_first_then_fallbacks() -> None:
     }
     cfg.providers.workflows = {
         "eval": WorkflowProviderConfig(
-            provider_kind="llmstudio",
             model="llmstudio/primary",
             fallback_models=["llmstudio/fallback-1", "llmstudio/fallback-2"],
         )
@@ -139,7 +136,6 @@ def test_model_chain_allows_no_fallbacks() -> None:
     }
     cfg.providers.workflows = {
         "eval": WorkflowProviderConfig(
-            provider_kind="llmstudio",
             model="llmstudio/primary",
             fallback_models=None,
         )
@@ -161,7 +157,6 @@ def test_model_chain_randomizes_with_seed() -> None:
     }
     cfg.providers.workflows = {
         "eval": WorkflowProviderConfig(
-            provider_kind="llmstudio",
             model="llmstudio/primary",
             fallback_models=["llmstudio/fallback-1", "llmstudio/fallback-2"],
             randomize_model=True,

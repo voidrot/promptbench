@@ -61,6 +61,7 @@ policies: {}
     assert cfg.providers.workflows["eval"].randomize_model is False
     assert cfg.policies.model_random_seed is None
     assert warnings
+    assert "provider_kind" in warnings[0]
 
     loaded = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
     assert loaded["version"] == LATEST_CONFIG_VERSION
@@ -128,3 +129,60 @@ policies:
     assert cfg.version == LATEST_CONFIG_VERSION
     assert not changes
     assert warnings
+
+
+def test_upgrade_removes_provider_kind_keys(tmp_path: Path) -> None:
+    cfg_path = tmp_path / "promptbench.yaml"
+    cfg_path.write_text(
+        """
+version: 1
+project:
+  name: test
+  root: .
+objects:
+  defaults: {}
+  skills: {}
+  prompts: {}
+  agents: {}
+  tools: {}
+artifacts:
+  skills:
+    root_path: skills/
+  prompts:
+    root_path: prompts/
+  agents:
+    root_path: agents/
+  tools:
+    root_path: tools/
+providers:
+  registry: {}
+  workflows:
+    review:
+      provider_kind: openai
+      model: openai/gpt-4.1-mini
+    eval:
+      provider_kind: openai
+      model: openai/gpt-4.1-mini
+    enhance:
+      provider_kind: openai
+      model: openai/gpt-4.1-mini
+workflows:
+  review: {}
+  eval: {}
+  enhance: {}
+output: {}
+policies: {}
+""",
+        encoding="utf-8",
+    )
+
+    _cfg, changes, _warnings = upgrade_config_file(cfg_path)
+    assert any("removed providers.workflows.review.provider_kind" in c for c in changes)
+    assert any("removed providers.workflows.eval.provider_kind" in c for c in changes)
+    assert any(
+        "removed providers.workflows.enhance.provider_kind" in c for c in changes
+    )
+
+    loaded = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+    for workflow in ("review", "eval", "judge", "enhance"):
+        assert "provider_kind" not in loaded["providers"]["workflows"][workflow]

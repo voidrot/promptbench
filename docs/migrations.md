@@ -29,15 +29,18 @@ The command:
 - Adds `providers.workflows.judge` chain defaults
 - Adds `providers.workflows.<review|eval|enhance>.randomize_model` defaults
 - Adds `policies.model_random_seed`
+- Removes deprecated `providers.workflows.<review|eval|judge|enhance>.provider_kind`
 - Sets `version: 2`
 
 ## Deprecation Warnings
 
-`upgrade` emits warnings for settings that still work but are discouraged due to new routing behavior.
+`upgrade` emits warnings for deprecated settings.
 
 Current warning set includes:
 
 - `providers.workflows.review.provider_kind`
 - `providers.workflows.eval.provider_kind`
+- `providers.workflows.judge.provider_kind`
+- `providers.workflows.enhance.provider_kind`
 
-These warnings are advisory and do not block loading.
+These warnings are advisory and do not block loading. The upgrade process also removes these keys from migrated files.

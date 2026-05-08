@@ -143,6 +143,7 @@ objects:
   prompts: {}
   agents: {}
   tools: {}
+  instructions: {}
 artifacts:
   prompts:
     root_path: prompts/
@@ -152,6 +153,8 @@ artifacts:
     root_path: agents/
   tools:
     root_path: tools/
+  instructions:
+    root_path: instructions/
 providers:
   default_kind: openai-compatible
   defaults:
@@ -260,10 +263,15 @@ providers:
       api_key_env: OPENAI_API_KEY
   workflows:
     eval:
-      provider_kind: openai
       model: openai/workflow-primary
       fallback_models:
         - openai/workflow-fallback
+      randomize_model: false
+    judge:
+      model: openai/workflow-primary
+      fallback_models:
+        - openai/workflow-fallback
+      randomize_model: false
 workflows:
   review:
     enabled: true
@@ -288,6 +296,7 @@ policies:
   fail_on_score_below: 0.7
   max_workers: 1
   require_model_success: false
+  model_random_seed: null
 """,
         encoding="utf-8",
     )
