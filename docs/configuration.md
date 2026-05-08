@@ -22,10 +22,12 @@ base_url: ${CUSTOM_API_BASE_URL}   # explicit ${VAR} syntax
 ### `version`
 
 ```yaml
-version: 1
+version: 2
 ```
 
-Schema version. Currently always `1`.
+Schema version. Current version is `2`.
+
+Use `promptbench upgrade` to migrate older config files and add newly introduced defaults.
 
 ---
 

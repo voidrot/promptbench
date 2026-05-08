@@ -74,6 +74,7 @@ mise x -- uv run -- promptbench --help
 | Command                 | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | `init`                  | Initialize a `.promptbench/` config directory in the current repo |
+| `upgrade`               | Upgrade config to latest schema defaults                          |
 | `review <type> <path>`  | Validate and review a single artifact                             |
 | `eval <type> <path>`    | Run eval suite against an artifact                                |
 | `eval-all <type>`       | Discover and evaluate all artifacts of a type                     |
@@ -181,6 +182,8 @@ flowchart TD
 ## Configuration
 
 PromptBench reads a YAML config (default: `.promptbench/config.yaml`, override with `--config`).
+
+Run `promptbench upgrade --config <path>` to migrate an existing config to the latest supported version, filling in new defaults and warning about deprecated settings.
 
 ```yaml
 objects:
@@ -309,6 +312,7 @@ Routes:
 | [Architecture](docs/architecture.md)   | Module map, data flow, persistence schema      |
 | [CLI Reference](docs/cli-reference.md) | Every command, flag, and default               |
 | [Configuration](docs/configuration.md) | Full YAML schema with all fields               |
+| [Migrations](docs/migrations.md)       | Config version upgrades and deprecation notes  |
 | [Workflows](docs/workflows.md)         | Review, eval, enhance internals                |
 | [Artifacts](docs/artifacts.md)         | Artifact types, formats, discovery, validation |
 | [Dashboard](docs/dashboard.md)         | Web UI routes and API endpoints                |

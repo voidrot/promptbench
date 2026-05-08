@@ -7,6 +7,9 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+LATEST_CONFIG_VERSION = 2
+
+
 class ArtifactType(StrEnum):
     SKILLS = "skills"
     PROMPTS = "prompts"
@@ -166,7 +169,7 @@ class ProjectConfig(BaseModel):
 
 
 class PromptBenchConfig(BaseModel):
-    version: int = 1
+    version: int = LATEST_CONFIG_VERSION
     project: ProjectConfig = Field(default_factory=ProjectConfig)
     objects: ObjectsConfig = Field(default_factory=ObjectsConfig)
     artifacts: ArtifactsConfig = Field(default_factory=ArtifactsConfig)

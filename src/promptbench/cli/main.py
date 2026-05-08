@@ -11,6 +11,7 @@ from promptbench.cli.commands.init import init_command
 from promptbench.cli.commands.report import report_command
 from promptbench.cli.commands.review import review_command
 from promptbench.cli.commands.serve import serve_command
+from promptbench.cli.commands.upgrade import upgrade_command
 from promptbench.config.schema import ArtifactType
 
 
@@ -36,6 +37,15 @@ def init(
     force: bool = typer.Option(False, "--force", help="Overwrite if file exists."),
 ) -> None:
     init_command(config=config, force=force)
+
+
+@app.command("upgrade")
+def upgrade(
+    config: Path = typer.Option(
+        Path("promptbench.yaml"), "--config", help="Path to config file."
+    ),
+) -> None:
+    upgrade_command(config=config)
 
 
 @app.command("review")

@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 
 
-DEFAULT_CONFIG = """version: 1
+DEFAULT_CONFIG = """version: 2
 
 project:
   name: "my-project"
@@ -54,6 +54,7 @@ providers:
       provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
+      randomize_model: false
     eval:
       provider_kind: openai
       model: "openai/gpt-4.1-mini"
@@ -96,6 +97,7 @@ policies:
   fail_on_score_below: 0.7
   max_workers: 1
   require_model_success: true
+  model_random_seed: null
   log_verbosity: "normal"
 """
 

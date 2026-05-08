@@ -30,6 +30,22 @@ Writes a template `promptbench.yaml` with sensible defaults. Safe to re-run with
 
 ---
 
+## `upgrade`
+
+Upgrade an existing config file to the latest schema version, preserving existing values and filling missing defaults.
+
+```
+promptbench upgrade [OPTIONS]
+```
+
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `--config` | Path | `promptbench.yaml` | Config file to upgrade |
+
+Reports applied changes and deprecation warnings.
+
+---
+
 ## `review`
 
 Review a single artifact for issues.
