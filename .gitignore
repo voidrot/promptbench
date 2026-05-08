@@ -5,3 +5,4 @@ __pycache__/
 promptbench.db
 .venv
 .opencode
+samples/e2e/.promptbench/reports
