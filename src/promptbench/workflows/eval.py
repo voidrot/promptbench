@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, cast
 
 from pydantic_ai import Agent
 
@@ -81,14 +82,40 @@ class TestEvalResult:
 
 
 def _eval_agent(model_name: str) -> Agent[None, EvalModelOutput]:
-    return Agent(
-        f"openai:{model_name}",
-        output_type=EvalModelOutput,
-        system_prompt=(
-            "Evaluate the artifact against the given prompt and return a normalized score from 0 to 1, "
-            "metric breakdown, and assertion pass/fail messages."
+    return cast(
+        Agent[None, EvalModelOutput],
+        Agent(
+            f"openai:{model_name}",
+            output_type=EvalModelOutput,
+            system_prompt=(
+                "Evaluate the artifact against the given prompt and return a normalized score from 0 to 1, "
+                "metric breakdown, and assertion pass/fail messages."
+            ),
         ),
     )
+
+
+def _as_int(value: object | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return None
+    return None
+
+
+def _as_datetime(value: object | None) -> datetime | None:
+    if isinstance(value, datetime):
+        return value
+    return None
 
 
 def _simple_score(artifact_content: str, prompt_text: str) -> float:
@@ -112,6 +139,11 @@ def _run_eval_model_for_test(
     prompt_token_estimate: int,
 ) -> tuple[EvalModelOutput, bool, list[dict[str, object]]]:
     model_override = test.model or definition.model
+    test_randomize_model = (
+        test.randomize_model
+        if test.randomize_model is not None
+        else definition.randomize_model
+    )
     fallback_models = (
         test.fallback_models
         if test.fallback_models is not None
@@ -120,10 +152,25 @@ def _run_eval_model_for_test(
 
     model_chain = resolve_workflow_model_chain(
         config,
-        workflow="eval",
+        workflow="judge",
         model_override=model_override,
         fallback_overrides=fallback_models,
+        randomize_model=test_randomize_model,
+        randomization_key=(
+            f"{definition.id}:{test.id or 'default'}:{prompt_text[:80]}:{prompt_token_estimate}"
+        ),
     )
+    if not model_chain:
+        model_chain = resolve_workflow_model_chain(
+            config,
+            workflow="eval",
+            model_override=model_override,
+            fallback_overrides=fallback_models,
+            randomize_model=test_randomize_model,
+            randomization_key=(
+                f"{definition.id}:{test.id or 'default'}:{prompt_text[:80]}:{prompt_token_estimate}"
+            ),
+        )
     invocations: list[dict[str, object]] = []
 
     if not model_chain:
@@ -143,7 +190,7 @@ def _run_eval_model_for_test(
                 "started_at": None,
                 "finished_at": None,
                 "error_type": "ConfigurationError",
-                "error_message": "No providers.workflows.eval model chain configured.",
+                "error_message": "No providers.workflows.judge/eval model chain configured.",
                 "provider_status_code": None,
                 "prompt_payload": prompt_payload,
                 "response_payload": None,
@@ -434,12 +481,11 @@ def _run_definition_round(
                         model=str(invocation["model"]),
                         success=bool(invocation["success"]),
                         fallback_used=bool(invocation["fallback_used"]),
-                        prompt_token_estimate=int(invocation["prompt_token_estimate"]),
-                        latency_ms=(
-                            int(invocation["latency_ms"])
-                            if invocation["latency_ms"] is not None
-                            else None
-                        ),
+                        prompt_token_estimate=_as_int(
+                            invocation.get("prompt_token_estimate")
+                        )
+                        or 0,
+                        latency_ms=(_as_int(invocation.get("latency_ms"))),
                         error_message=(
                             str(invocation["error_message"])
                             if invocation["error_message"] is not None
@@ -452,32 +498,29 @@ def _run_definition_round(
                         stage=str(invocation.get("stage") or "eval"),
                         provider_id=str(invocation["provider_id"]),
                         model=str(invocation["model"]),
-                        attempt_index=int(invocation.get("attempt_index") or 0),
+                        attempt_index=_as_int(invocation.get("attempt_index")) or 0,
                         success=bool(invocation["success"]),
                         fallback_used=bool(invocation["fallback_used"]),
-                        prompt_token_estimate=int(invocation["prompt_token_estimate"]),
-                        latency_ms=(
-                            int(invocation["latency_ms"])
-                            if invocation["latency_ms"] is not None
-                            else None
-                        ),
+                        prompt_token_estimate=_as_int(
+                            invocation.get("prompt_token_estimate")
+                        )
+                        or 0,
+                        latency_ms=(_as_int(invocation.get("latency_ms"))),
                         error_type=(
                             str(invocation["error_type"])
                             if invocation["error_type"] is not None
                             else None
                         ),
                         provider_status_code=(
-                            int(invocation["provider_status_code"])
-                            if invocation.get("provider_status_code") is not None
-                            else None
+                            _as_int(invocation.get("provider_status_code"))
                         ),
                         error_message=(
                             str(invocation["error_message"])
                             if invocation["error_message"] is not None
                             else None
                         ),
-                        started_at=invocation.get("started_at"),
-                        finished_at=invocation.get("finished_at"),
+                        started_at=_as_datetime(invocation.get("started_at")),
+                        finished_at=_as_datetime(invocation.get("finished_at")),
                     )
                     if invocation.get("prompt_payload") is not None:
                         repo.add_payload_log(

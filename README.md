@@ -1,6 +1,6 @@
 # PromptBench
 
-> CLI for evaluating and iteratively improving agent artifacts — skills, prompts, agents, and tools.
+> CLI for evaluating and iteratively improving agent artifacts — skills, prompts, agents, tools, and instructions.
 
 [![Python 3.14+](https://img.shields.io/badge/python-3.14%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -13,6 +13,7 @@
 - **Eval** — run test suites against an artifact, score results, track history
 - **Enhance** — iterative LLM-powered rewrite loop with convergence detection
 - **Eval-all** — aggregate evaluation across all discovered artifacts of a type
+- **Eval-merge** — merge multiple artifacts of one type, seed tests, then run eval loop
 - **Report** — JSON or Markdown summary of all runs in the local database
 - **Serve** — local Flask dashboard for browsing runs, artifacts, and metrics
 - Structured outputs via `pydantic-ai`; graceful fallback to local heuristics when no model is available
@@ -70,14 +71,15 @@ mise x -- uv run -- promptbench --help
 
 ## Commands
 
-| Command                | Description                                                       |
-| ---------------------- | ----------------------------------------------------------------- |
-| `init`                 | Initialize a `.promptbench/` config directory in the current repo |
-| `review <type> <path>` | Validate and review a single artifact                             |
-| `eval <type> <path>`   | Run eval suite against an artifact                                |
-| `eval-all <type>`      | Discover and evaluate all artifacts of a type                     |
-| `report`               | Print a run summary (JSON or Markdown)                            |
-| `serve`                | Start the local web dashboard                                     |
+| Command                 | Description                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
+| `init`                  | Initialize a `.promptbench/` config directory in the current repo |
+| `review <type> <path>`  | Validate and review a single artifact                             |
+| `eval <type> <path>`    | Run eval suite against an artifact                                |
+| `eval-all <type>`       | Discover and evaluate all artifacts of a type                     |
+| `eval-merge <type> ...` | Merge multiple targets into one artifact and auto-evaluate        |
+| `report`                | Print a run summary (JSON or Markdown)                            |
+| `serve`                 | Start the local web dashboard                                     |
 
 ### eval flags
 
@@ -87,6 +89,9 @@ mise x -- uv run -- promptbench --help
 --continuous                Keep improving until score stops changing
 --continuous-max-rounds N   Cap on continuous rounds
 --concurrency N             Parallel workers (auto-tuned if omitted)
+--randomize-model           Shuffle model order (primary + fallbacks)
+--no-randomize-model        Disable model shuffling
+--model-random-seed N       Make model shuffling deterministic
 --output FILE               Write JSON trajectory to file
 --no-require-model-success  Don't fail if model calls error out
 ```
@@ -205,10 +210,18 @@ workflows:
 Key config keys:
 
 - `objects.defaults.max_line_count` / `max_token_count` — global artifact size limits
-- `objects.skills|prompts|agents|tools` — per-type overrides
+- `objects.skills|prompts|agents|tools|instructions` — per-type overrides
 - `object_limits` inside an eval definition — per-eval override
 - `policies.require_model_success` — default `true`; set `false` to allow runs without a live model
+- `policies.model_random_seed` — optional deterministic seed for model randomization
 - `providers.registry.<id>.max_concurrency` — per-provider parallelism cap
+
+Model routing notes:
+
+- `providers.workflows.judge` can be configured separately from `eval` and `review`
+- Eval scoring prefers `judge`, then falls back to `eval`
+- Review prefers `review`, then falls back to `judge`
+- Enhance prefers `enhance`, then falls back to `judge`
 
 ---
 

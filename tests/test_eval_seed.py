@@ -67,7 +67,9 @@ def test_generate_eval_seed_tests_requires_provider_chain(
         lambda *_args, **_kwargs: [],
     )
 
-    with pytest.raises(RuntimeError, match="No providers.workflows.eval model chain"):
+    with pytest.raises(
+        RuntimeError, match="No providers.workflows.judge/eval model chain"
+    ):
         eval_seed.generate_eval_seed_tests(
             config=cfg,
             artifact_type=ArtifactType.SKILLS,

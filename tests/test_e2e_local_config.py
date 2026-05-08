@@ -54,6 +54,7 @@ objects:
   prompts: {}
   agents: {}
   tools: {}
+  instructions: {}
 artifacts:
   prompts:
     root_path: prompts/
@@ -63,6 +64,8 @@ artifacts:
     root_path: agents/
   tools:
     root_path: tools/
+  instructions:
+    root_path: instructions/
 providers:
   default_kind: openai-compatible
   defaults:
@@ -79,14 +82,22 @@ providers:
       provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
+      randomize_model: false
     eval:
       provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
+      randomize_model: false
+    judge:
+      provider_kind: llmstudio
+      model: llmstudio/essentialai/rnj-1
+      fallback_models: [llmstudio/nvidia/nemotron-3-nano-4b]
+      randomize_model: false
     enhance:
       provider_kind: llmstudio
       model: llmstudio/nvidia/nemotron-3-nano-4b
       fallback_models: [llmstudio/essentialai/rnj-1]
+      randomize_model: false
 workflows:
   review:
     enabled: true
@@ -110,6 +121,7 @@ policies:
   fail_on_score_below: 0.7
   max_workers: 1
   require_model_success: false
+  model_random_seed: 7
 """,
         encoding="utf-8",
     )

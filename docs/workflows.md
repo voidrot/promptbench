@@ -1,6 +1,6 @@
 # Workflows
 
-Three core workflows execute when you run `review`, `eval`, or `eval-all`. Each workflow calls LLM models via a fallback chain and persists all telemetry to the SQLite database.
+Three core workflows execute when you run `review`, `eval`, or `eval-all`. Each workflow calls LLM models via a fallback chain (with optional randomized ordering) and persists all telemetry to the SQLite database.
 
 ---
 
@@ -15,7 +15,7 @@ Three core workflows execute when you run `review`, `eval`, or `eval-all`. Each 
 1. Create a run record in the database
 2. Resolve the artifact file → upsert into artifact table
 3. Run type-specific static validation (e.g., frontmatter checks for skills)
-4. For each model in the chain (primary → fallbacks):
+4. For each model in the chain (primary -> fallbacks, or shuffled when randomization is enabled):
    - Call review agent with artifact content
    - Parse `ReviewModelOutput` → structured findings list
    - Log prompt, response, and raw response to payload_logs
@@ -139,7 +139,7 @@ class EnhanceModelOutput(BaseModel):
 
 ## Model Chain Execution
 
-All three workflows share the same fallback pattern:
+All workflows share the same fallback pattern:
 
 ```python
 for provider in resolved_model_chain:
@@ -154,6 +154,14 @@ for provider in resolved_model_chain:
 ```
 
 The `provider_openai_env` context manager sets `OPENAI_BASE_URL` and `OPENAI_API_KEY` from the provider config, then restores the previous values on exit.
+
+Routing preference by stage:
+
+- review stage: `review` chain, then `judge` chain
+- eval scoring stage: `judge` chain, then `eval` chain
+- enhance stages: `enhance` chain, then `judge` chain
+
+If `randomize_model: true`, PromptBench shuffles candidates from `[primary + fallback_models]` before attempts. If `policies.model_random_seed` is set, the order is deterministic.
 
 ---
 

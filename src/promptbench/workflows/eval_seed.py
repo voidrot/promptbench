@@ -64,10 +64,20 @@ def generate_eval_seed_tests(
     source_targets: list[str],
     merged_content: str,
 ) -> list[EvalTest]:
-    model_chain = resolve_workflow_model_chain(config, workflow="eval")
+    model_chain = resolve_workflow_model_chain(
+        config,
+        workflow="judge",
+        randomization_key=f"eval_seed:{artifact_type.value}:{merged_target}",
+    )
+    if not model_chain:
+        model_chain = resolve_workflow_model_chain(
+            config,
+            workflow="eval",
+            randomization_key=f"eval_seed:{artifact_type.value}:{merged_target}",
+        )
     if not model_chain:
         raise RuntimeError(
-            "No providers.workflows.eval model chain configured for eval test generation."
+            "No providers.workflows.judge/eval model chain configured for eval test generation."
         )
 
     payload = {

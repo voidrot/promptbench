@@ -21,6 +21,7 @@ objects:
     max_token_count: 8000
   agents: {}
   tools: {}
+  instructions: {}
 
 artifacts:
   prompts:
@@ -33,6 +34,8 @@ artifacts:
     root_path: "agents/"
   tools:
     root_path: "tools/"
+  instructions:
+    root_path: "instructions/"
 
 providers:
   default_kind: openai-compatible
@@ -55,10 +58,17 @@ providers:
       provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
+      randomize_model: false
+    judge:
+      provider_kind: openai
+      model: "openai/gpt-4.1-mini"
+      fallback_models: []
+      randomize_model: false
     enhance:
       provider_kind: openai
       model: "openai/gpt-4.1-mini"
       fallback_models: []
+      randomize_model: false
 
 workflows:
   review:

@@ -1,6 +1,6 @@
 # Artifacts
 
-Artifacts are the files PromptBench evaluates — skills, prompts, agents, or tools. Each is a Markdown file with a YAML frontmatter header.
+Artifacts are the files PromptBench evaluates — skills, prompts, agents, tools, or instructions. Each is a text artifact resolved from the configured root path.
 
 ---
 
@@ -12,6 +12,7 @@ Artifacts are the files PromptBench evaluates — skills, prompts, agents, or to
 | Prompts | `prompts` | `prompts/` |
 | Agents | `agents` | `agents/` |
 | Tools | `tools` | `tools/` |
+| Instructions | `instructions` | `instructions/` |
 
 Root paths are relative to `project.root` and configurable per type in `artifacts.<type>.root_path`.
 
@@ -57,6 +58,8 @@ What the skill is trying to accomplish.
 | Content must include `description:` | `missing_description` |
 
 Validation runs before any model calls during `review`.
+
+Note: instruction artifacts currently use generic text handling (no dedicated static validator yet).
 
 ---
 

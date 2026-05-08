@@ -39,6 +39,8 @@ def eval_command(
     continuous: bool = False,
     continuous_max_rounds: int = 6,
     require_model_success: bool = True,
+    randomize_model: bool | None = None,
+    model_random_seed: int | None = None,
     log_verbosity: str | None = None,
     output: Path | None = None,
     config: Path = Path("promptbench.yaml"),
@@ -46,6 +48,13 @@ def eval_command(
 ) -> None:
     cfg = load_config(config)
     cfg.policies.require_model_success = require_model_success
+    if randomize_model is not None:
+        for workflow_name in ("eval", "judge", "enhance"):
+            workflow_cfg = cfg.providers.workflows.get(workflow_name)
+            if workflow_cfg is not None:
+                workflow_cfg.randomize_model = randomize_model
+    if model_random_seed is not None:
+        cfg.policies.model_random_seed = model_random_seed
     if log_verbosity is not None:
         cfg.policies.log_verbosity = log_verbosity
     project_root = (repo / cfg.project.root).resolve()

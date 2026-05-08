@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import random
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Iterator
@@ -44,6 +45,8 @@ def resolve_workflow_model_chain(
     workflow: str,
     model_override: str | None = None,
     fallback_overrides: list[str] | None = None,
+    randomize_model: bool | None = None,
+    randomization_key: str | None = None,
 ) -> list[ProviderResolution]:
     workflow_cfg = config.providers.workflows.get(workflow)
     configured_primary = workflow_cfg.model if workflow_cfg is not None else None
@@ -65,6 +68,21 @@ def resolve_workflow_model_chain(
     for model_id in [primary, *fallbacks]:
         if model_id not in ordered_ids:
             ordered_ids.append(model_id)
+
+    workflow_randomize = (
+        workflow_cfg.randomize_model if workflow_cfg is not None else False
+    )
+    should_randomize = (
+        randomize_model if randomize_model is not None else workflow_randomize
+    )
+    if should_randomize and len(ordered_ids) > 1:
+        seed_value = config.policies.model_random_seed
+        if seed_value is None:
+            random.shuffle(ordered_ids)
+        else:
+            key = randomization_key or workflow
+            rng = random.Random(f"{seed_value}:{workflow}:{key}")
+            rng.shuffle(ordered_ids)
 
     resolved: list[ProviderResolution] = []
     for model_id in ordered_ids:

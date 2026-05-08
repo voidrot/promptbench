@@ -56,6 +56,7 @@ objects:
     max_token_count: 2048
   agents: {}
   tools: {}
+  instructions: {}
 ```
 
 **Resolution order (highest priority wins):** eval-definition `object_limits` → artifact-type section → `defaults`.
@@ -79,6 +80,8 @@ artifacts:
     root_path: agents/
   tools:
     root_path: tools/
+  instructions:
+    root_path: instructions/
 ```
 
 ---
@@ -115,17 +118,34 @@ providers:
       model: openai/gpt-4o-mini           # Format: <registry_key>/<model_name>
       fallback_models:
         - openai/gpt-3.5-turbo
+      randomize_model: false
     eval:
       provider_kind: openai-compatible
       model: openai/gpt-4o-mini
+      fallback_models: []
+      randomize_model: false
+    judge:
+      provider_kind: openai-compatible
+      model: openai/gpt-4o-mini
+      fallback_models:
+        - openai/gpt-3.5-turbo
+      randomize_model: false
     enhance:
       provider_kind: openai-compatible
       model: openai/gpt-4o
       fallback_models:
         - openai/gpt-4o-mini
+      randomize_model: false
 ```
 
 **Model ID format:** `<registry_key>/<model_name>` — the registry key must match a key in `providers.registry`.
+
+**Workflow model routing defaults:**
+- `review` workflow uses `providers.workflows.review`, then falls back to `providers.workflows.judge`
+- `eval` scoring uses `providers.workflows.judge`, then falls back to `providers.workflows.eval`
+- `enhance` uses `providers.workflows.enhance`, then falls back to `providers.workflows.judge`
+
+When `randomize_model: true`, PromptBench shuffles `[model + fallback_models]` before attempts.
 
 **Concurrency resolution order:**
 1. `--concurrency` CLI flag
@@ -191,6 +211,7 @@ policies:
   max_workers: 1                  # Default thread pool size
   require_model_success: true     # Fail run if no model call succeeded
   log_verbosity: normal           # quiet | normal | debug | trace
+  model_random_seed: null         # Optional deterministic seed for model randomization
 ```
 
 **`require_model_success`:** When `true` (default), a run is marked failed if every model in the chain errored. Set `false` with `--no-require-model-success` to allow runs without a live model (useful for local testing with heuristic fallbacks).
@@ -220,6 +241,7 @@ tests:
       - id: spanish
         text: "Evalúa esta habilidad en cuanto a claridad."
     model: openai/gpt-4o            # Per-test model override
+    randomize_model: null           # Per-test randomization override (null uses eval definition)
     inputs:
       context: some-value
     expected:

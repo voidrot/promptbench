@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 import hashlib
 from pathlib import Path
+from typing import cast
 
 from pydantic_ai import Agent
 
@@ -33,12 +34,15 @@ class ReviewResult:
 
 
 def _review_agent(model_name: str) -> Agent[None, ReviewModelOutput]:
-    return Agent(
-        f"openai:{model_name}",
-        output_type=ReviewModelOutput,
-        system_prompt=(
-            "Review the artifact content and return concise, structured findings with severity, "
-            "message, and optional suggestion/location."
+    return cast(
+        Agent[None, ReviewModelOutput],
+        Agent(
+            f"openai:{model_name}",
+            output_type=ReviewModelOutput,
+            system_prompt=(
+                "Review the artifact content and return concise, structured findings with severity, "
+                "message, and optional suggestion/location."
+            ),
         ),
     )
 
@@ -75,6 +79,8 @@ def run_review(
             repo.add_finding(run.id or 0, severity="error", message=finding)
 
     model_chain = resolve_workflow_model_chain(config, workflow="review")
+    if not model_chain:
+        model_chain = resolve_workflow_model_chain(config, workflow="judge")
     model_output: ReviewModelOutput | None = None
     model_success = False
     for idx, provider in enumerate(model_chain):
@@ -208,7 +214,7 @@ def run_review(
             provider_id="unconfigured",
             model="none",
             success=False,
-            error_message="No providers.workflows.review model chain configured.",
+            error_message="No providers.workflows.review/judge model chain configured.",
             prompt_token_estimate=artifact.token_count_estimate,
         )
         event = repo.add_model_invocation_event(
@@ -221,7 +227,7 @@ def run_review(
             success=False,
             prompt_token_estimate=artifact.token_count_estimate,
             error_type="ConfigurationError",
-            error_message="No providers.workflows.review model chain configured.",
+            error_message="No providers.workflows.review/judge model chain configured.",
         )
         repo.add_payload_log(
             run_id=run.id or 0,

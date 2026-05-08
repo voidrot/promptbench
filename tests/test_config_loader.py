@@ -19,6 +19,7 @@ objects:
   prompts: {}
   agents: {}
   tools: {}
+  instructions: {}
 artifacts:
   prompts:
     root_path: prompts/
@@ -28,6 +29,8 @@ artifacts:
     root_path: agents/
   tools:
     root_path: tools/
+  instructions:
+    root_path: instructions/
 providers:
   default_kind: openai-compatible
   defaults:
@@ -60,6 +63,7 @@ policies:
   fail_on_score_below: 0.7
   max_workers: 1
   require_model_success: true
+  model_random_seed: 123
 """,
         encoding="utf-8",
     )
@@ -67,3 +71,4 @@ policies:
     assert cfg.objects.defaults.max_line_count == 100
     assert cfg.policies.require_model_success is True
     assert cfg.policies.log_verbosity == "normal"
+    assert cfg.policies.model_random_seed == 123

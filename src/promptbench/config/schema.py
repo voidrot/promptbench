@@ -12,6 +12,7 @@ class ArtifactType(StrEnum):
     PROMPTS = "prompts"
     AGENTS = "agents"
     TOOLS = "tools"
+    INSTRUCTIONS = "instructions"
 
 
 class ObjectLimits(BaseModel):
@@ -31,6 +32,7 @@ class EvalTest(BaseModel):
     prompts: list[EvalPrompt | str] = Field(default_factory=list)
     model: str | None = None
     fallback_models: list[str] | None = None
+    randomize_model: bool | None = None
     inputs: dict[str, Any] = Field(default_factory=dict)
     expected: dict[str, Any] = Field(default_factory=dict)
     references: list[str] = Field(default_factory=list)
@@ -76,6 +78,9 @@ class ArtifactsConfig(BaseModel):
     tools: ArtifactConfig = Field(
         default_factory=lambda: ArtifactConfig(root_path="tools/")
     )
+    instructions: ArtifactConfig = Field(
+        default_factory=lambda: ArtifactConfig(root_path="instructions/")
+    )
 
 
 class ObjectsConfig(BaseModel):
@@ -84,6 +89,7 @@ class ObjectsConfig(BaseModel):
     prompts: ObjectLimits = Field(default_factory=ObjectLimits)
     agents: ObjectLimits = Field(default_factory=ObjectLimits)
     tools: ObjectLimits = Field(default_factory=ObjectLimits)
+    instructions: ObjectLimits = Field(default_factory=ObjectLimits)
 
 
 class ProviderDefaults(BaseModel):
@@ -103,6 +109,7 @@ class WorkflowProviderConfig(BaseModel):
     provider_kind: str
     model: str
     fallback_models: list[str] | None = None
+    randomize_model: bool = False
 
 
 class ProvidersConfig(BaseModel):
@@ -150,6 +157,7 @@ class PoliciesConfig(BaseModel):
     max_workers: int = 1
     require_model_success: bool = True
     log_verbosity: str = "normal"
+    model_random_seed: int | None = None
 
 
 class ProjectConfig(BaseModel):

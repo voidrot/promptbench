@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 import json
+from typing import cast
 
 from pydantic_ai import Agent
 
@@ -33,22 +34,28 @@ class EnhanceResult:
 
 
 def _enhance_agent(model_name: str) -> Agent[None, EnhanceModelOutput]:
-    return Agent(
-        f"openai:{model_name}",
-        output_type=EnhanceModelOutput,
-        system_prompt=(
-            "Provide concrete improvements for the artifact. Return suggestions and optional revised content."
+    return cast(
+        Agent[None, EnhanceModelOutput],
+        Agent(
+            f"openai:{model_name}",
+            output_type=EnhanceModelOutput,
+            system_prompt=(
+                "Provide concrete improvements for the artifact. Return suggestions and optional revised content."
+            ),
         ),
     )
 
 
 def _suggestion_agent(model_name: str) -> Agent[None, SuggestionListOutput]:
-    return Agent(
-        f"openai:{model_name}",
-        output_type=SuggestionListOutput,
-        system_prompt=(
-            "Generate targeted suggestions only, tied to failing behavior. "
-            "Return concise actionable bullet-like suggestions."
+    return cast(
+        Agent[None, SuggestionListOutput],
+        Agent(
+            f"openai:{model_name}",
+            output_type=SuggestionListOutput,
+            system_prompt=(
+                "Generate targeted suggestions only, tied to failing behavior. "
+                "Return concise actionable bullet-like suggestions."
+            ),
         ),
     )
 
@@ -74,13 +81,20 @@ def generate_enhancement_suggestions(
             fallback_overrides=fallback_models,
         )
         if not model_chain:
+            model_chain = resolve_workflow_model_chain(
+                config,
+                workflow="judge",
+                model_override=model_override,
+                fallback_overrides=fallback_models,
+            )
+        if not model_chain:
             repo.add_model_invocation(
                 run_id=run_id,
                 workflow="enhance",
                 provider_id="unconfigured",
                 model="none",
                 success=False,
-                error_message="No providers.workflows.enhance model chain configured.",
+                error_message="No providers.workflows.enhance/judge model chain configured.",
                 prompt_token_estimate=max(1, len(content) // 4),
             )
             event = repo.add_model_invocation_event(
@@ -93,7 +107,7 @@ def generate_enhancement_suggestions(
                 success=False,
                 prompt_token_estimate=max(1, len(content) // 4),
                 error_type="ConfigurationError",
-                error_message="No providers.workflows.enhance model chain configured.",
+                error_message="No providers.workflows.enhance/judge model chain configured.",
             )
             repo.add_payload_log(
                 run_id=run_id,

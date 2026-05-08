@@ -41,6 +41,8 @@ def eval_all_command(
     continuous: bool = False,
     continuous_max_rounds: int = 6,
     require_model_success: bool = True,
+    randomize_model: bool | None = None,
+    model_random_seed: int | None = None,
     log_verbosity: str | None = None,
     output: Path | None = None,
     config: Path = Path("promptbench.yaml"),
@@ -48,6 +50,13 @@ def eval_all_command(
 ) -> None:
     cfg = load_config(config)
     cfg.policies.require_model_success = require_model_success
+    if randomize_model is not None:
+        for workflow_name in ("eval", "judge", "enhance"):
+            workflow_cfg = cfg.providers.workflows.get(workflow_name)
+            if workflow_cfg is not None:
+                workflow_cfg.randomize_model = randomize_model
+    if model_random_seed is not None:
+        cfg.policies.model_random_seed = model_random_seed
     if log_verbosity is not None:
         cfg.policies.log_verbosity = log_verbosity
     project_root = (repo / cfg.project.root).resolve()
@@ -114,14 +123,9 @@ def eval_all_command(
                     typer.echo(f"  - recent model error: {err}")
             typer.echo("")
 
-        run_rows = list(
-            session.exec(
-                select(Run)
-                .where(Run.run_kind == "eval")
-                .order_by(Run.id.desc())
-                .limit(max(1, total))
-            ).all()
-        )
+        run_rows = list(session.exec(select(Run).where(Run.run_kind == "eval")).all())
+        run_rows.sort(key=lambda row: row.id or 0, reverse=True)
+        run_rows = run_rows[: max(1, total)]
 
     if output is None:
         reports_dir = (project_root / cfg.output.reports_dir).resolve()

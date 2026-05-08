@@ -75,6 +75,8 @@ def eval_merge_command(
     name: str | None = None,
     concurrency: int | None = None,
     require_model_success: bool = True,
+    randomize_model: bool | None = None,
+    model_random_seed: int | None = None,
     log_verbosity: str | None = None,
     config: Path = Path("promptbench.yaml"),
     repo: Path = Path("."),
@@ -89,6 +91,13 @@ def eval_merge_command(
     if log_verbosity is not None:
         cfg.policies.log_verbosity = log_verbosity
     cfg.policies.require_model_success = require_model_success
+    if randomize_model is not None:
+        for workflow_name in ("eval", "judge", "enhance"):
+            workflow_cfg = cfg.providers.workflows.get(workflow_name)
+            if workflow_cfg is not None:
+                workflow_cfg.randomize_model = randomize_model
+    if model_random_seed is not None:
+        cfg.policies.model_random_seed = model_random_seed
 
     project_root = (repo / cfg.project.root).resolve()
 
@@ -153,6 +162,8 @@ def eval_merge_command(
         concurrency=concurrency,
         continuous=False,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
         log_verbosity=log_verbosity,
         config=config,
         repo=repo,

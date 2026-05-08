@@ -2,14 +2,14 @@
 
 ## Overview
 
-PromptBench is a Python CLI that evaluates and iteratively improves agent artifacts (skills, prompts, agents, tools) against LLM-backed eval suites. It persists all run telemetry to SQLite and exposes a local Flask dashboard for browsing results.
+PromptBench is a Python CLI that evaluates and iteratively improves agent artifacts (skills, prompts, agents, tools, instructions) against LLM-backed eval suites. It persists all run telemetry to SQLite and exposes a local Flask dashboard for browsing results.
 
 ## Module Map
 
 ```
 src/promptbench/
-├── cli/                  Entry point; Typer app + 6 commands
-│   └── commands/         One module per command (init, review, eval, eval_all, report, serve)
+├── cli/                  Entry point; Typer app + 7 commands
+│   └── commands/         One module per command (init, review, eval, eval_all, eval_merge, report, serve)
 ├── config/               YAML loading and Pydantic schema
 ├── artifacts/            Artifact resolution and dataclasses
 ├── evals/                Eval definition loading and prompt selection
@@ -80,6 +80,14 @@ All workflow LLM calls iterate a model chain:
 ```
 [primary_model, ...fallback_models]
 ```
+
+Routing preference by stage:
+
+- review stage: `review` chain, then `judge` chain
+- eval scoring stage: `judge` chain, then `eval` chain
+- enhance stages: `enhance` chain, then `judge` chain
+
+When `randomize_model` is enabled for the selected workflow chain, ordering is shuffled before attempts. `policies.model_random_seed` enables deterministic shuffles.
 
 On each model: try → structured output parse → record invocation event.
 First success wins. Chain continues on error. If all fail, workflow uses deterministic local heuristics and records failure.

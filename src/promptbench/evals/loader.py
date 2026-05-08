@@ -38,6 +38,7 @@ def load_eval_definitions(
         ArtifactType.PROMPTS,
         ArtifactType.AGENTS,
         ArtifactType.TOOLS,
+        ArtifactType.INSTRUCTIONS,
     ):
         inline_defs.extend(getattr(config.artifacts, at.value).evals)
 
@@ -66,6 +67,7 @@ def load_eval_definitions(
             ArtifactType.PROMPTS,
             ArtifactType.AGENTS,
             ArtifactType.TOOLS,
+            ArtifactType.INSTRUCTIONS,
         ]
     )
 

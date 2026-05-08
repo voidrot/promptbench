@@ -47,6 +47,16 @@ def review(
         "--require-model-success/--no-require-model-success",
         help="Require at least one successful model invocation; otherwise fail run.",
     ),
+    randomize_model: bool | None = typer.Option(
+        None,
+        "--randomize-model/--no-randomize-model",
+        help="Override model randomization across review/judge workflows.",
+    ),
+    model_random_seed: int | None = typer.Option(
+        None,
+        "--model-random-seed",
+        help="Seed for deterministic model randomization.",
+    ),
     log_verbosity: str | None = typer.Option(
         None,
         "--log-verbosity",
@@ -61,6 +71,8 @@ def review(
         artifact_type=artifact_type,
         target=target,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
         log_verbosity=_validate_log_verbosity(log_verbosity),
         config=config,
         repo=repo,
@@ -93,6 +105,16 @@ def eval(
         "--require-model-success/--no-require-model-success",
         help="Require at least one successful model invocation; otherwise fail run.",
     ),
+    randomize_model: bool | None = typer.Option(
+        None,
+        "--randomize-model/--no-randomize-model",
+        help="Override model randomization across eval/judge/enhance workflows.",
+    ),
+    model_random_seed: int | None = typer.Option(
+        None,
+        "--model-random-seed",
+        help="Seed for deterministic model randomization.",
+    ),
     log_verbosity: str | None = typer.Option(
         None,
         "--log-verbosity",
@@ -117,6 +139,8 @@ def eval(
         continuous=continuous,
         continuous_max_rounds=continuous_max_rounds,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
         log_verbosity=_validate_log_verbosity(log_verbosity),
         output=output,
         config=config,
@@ -149,6 +173,16 @@ def eval_all(
         "--require-model-success/--no-require-model-success",
         help="Require at least one successful model invocation; otherwise fail run.",
     ),
+    randomize_model: bool | None = typer.Option(
+        None,
+        "--randomize-model/--no-randomize-model",
+        help="Override model randomization across eval/judge/enhance workflows.",
+    ),
+    model_random_seed: int | None = typer.Option(
+        None,
+        "--model-random-seed",
+        help="Seed for deterministic model randomization.",
+    ),
     log_verbosity: str | None = typer.Option(
         None,
         "--log-verbosity",
@@ -172,6 +206,8 @@ def eval_all(
         continuous=continuous,
         continuous_max_rounds=continuous_max_rounds,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
         log_verbosity=_validate_log_verbosity(log_verbosity),
         output=output,
         config=config,
@@ -198,6 +234,16 @@ def eval_merge(
         "--require-model-success/--no-require-model-success",
         help="Require at least one successful model invocation; otherwise fail run.",
     ),
+    randomize_model: bool | None = typer.Option(
+        None,
+        "--randomize-model/--no-randomize-model",
+        help="Override model randomization across eval/judge/enhance workflows.",
+    ),
+    model_random_seed: int | None = typer.Option(
+        None,
+        "--model-random-seed",
+        help="Seed for deterministic model randomization.",
+    ),
     log_verbosity: str | None = typer.Option(
         None,
         "--log-verbosity",
@@ -214,6 +260,8 @@ def eval_merge(
         name=name,
         concurrency=concurrency,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
         log_verbosity=_validate_log_verbosity(log_verbosity),
         config=config,
         repo=repo,

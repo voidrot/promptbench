@@ -147,3 +147,46 @@ def test_model_chain_allows_no_fallbacks() -> None:
 
     chain = resolve_workflow_model_chain(cfg, workflow="eval")
     assert [p.model_name for p in chain] == ["primary"]
+
+
+def test_model_chain_randomizes_with_seed() -> None:
+    cfg = PromptBenchConfig()
+    cfg.policies.model_random_seed = 1337
+    cfg.providers.registry = {
+        "llmstudio": ProviderConfig(
+            kind="openai-compatible",
+            base_url="http://localhost:1234/v1",
+            api_key_env="LLMSTUDIO_API_KEY",
+        )
+    }
+    cfg.providers.workflows = {
+        "eval": WorkflowProviderConfig(
+            provider_kind="llmstudio",
+            model="llmstudio/primary",
+            fallback_models=["llmstudio/fallback-1", "llmstudio/fallback-2"],
+            randomize_model=True,
+        )
+    }
+
+    chain_a = resolve_workflow_model_chain(
+        cfg,
+        workflow="eval",
+        randomization_key="test-a",
+    )
+    chain_b = resolve_workflow_model_chain(
+        cfg,
+        workflow="eval",
+        randomization_key="test-a",
+    )
+    chain_c = resolve_workflow_model_chain(
+        cfg,
+        workflow="eval",
+        randomization_key="test-b",
+    )
+
+    names_a = [p.model_name for p in chain_a]
+    names_b = [p.model_name for p in chain_b]
+    names_c = [p.model_name for p in chain_c]
+    assert names_a == names_b
+    assert sorted(names_a) == ["fallback-1", "fallback-2", "primary"]
+    assert sorted(names_c) == ["fallback-1", "fallback-2", "primary"]

@@ -16,6 +16,8 @@ def review_command(
     artifact_type: ArtifactType,
     target: str,
     require_model_success: bool | None = None,
+    randomize_model: bool | None = None,
+    model_random_seed: int | None = None,
     log_verbosity: str | None = None,
     config: Path = Path("promptbench.yaml"),
     repo: Path = Path("."),
@@ -23,6 +25,13 @@ def review_command(
     cfg = load_config(config)
     if require_model_success is not None:
         cfg.policies.require_model_success = require_model_success
+    if randomize_model is not None:
+        for workflow_name in ("review", "judge"):
+            workflow_cfg = cfg.providers.workflows.get(workflow_name)
+            if workflow_cfg is not None:
+                workflow_cfg.randomize_model = randomize_model
+    if model_random_seed is not None:
+        cfg.policies.model_random_seed = model_random_seed
     if log_verbosity is not None:
         cfg.policies.log_verbosity = log_verbosity
     project_root = (repo / cfg.project.root).resolve()

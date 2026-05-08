@@ -42,7 +42,7 @@ promptbench review <artifact_type> <target> [OPTIONS]
 
 | Argument | Values |
 |---|---|
-| `artifact_type` | `skills` `prompts` `agents` `tools` |
+| `artifact_type` | `skills` `prompts` `agents` `tools` `instructions` |
 | `target` | Artifact filename (relative to artifact root, or absolute path) |
 
 **Flags:**
@@ -50,6 +50,8 @@ promptbench review <artifact_type> <target> [OPTIONS]
 | Flag | Type | Default | Description |
 |---|---|---|---|
 | `--require-model-success` / `--no-require-model-success` | bool | from config | Fail if no model call succeeded |
+| `--randomize-model` / `--no-randomize-model` | bool | from config | Override model-order shuffling for `review`/`judge` workflows |
+| `--model-random-seed` | int | from config | Deterministic seed for model shuffling |
 | `--log-verbosity` | str | from config | `quiet` `normal` `debug` `trace` |
 
 **Output:** Prints findings (severity, message, suggestion, location). Exits non-zero if model required and unavailable.
@@ -68,7 +70,7 @@ promptbench eval <artifact_type> <target> [OPTIONS]
 
 | Argument | Values |
 |---|---|
-| `artifact_type` | `skills` `prompts` `agents` `tools` |
+| `artifact_type` | `skills` `prompts` `agents` `tools` `instructions` |
 | `target` | Artifact filename |
 
 **Flags:**
@@ -81,6 +83,8 @@ promptbench eval <artifact_type> <target> [OPTIONS]
 | `--continuous` | bool | False | Keep re-running rounds while score improves |
 | `--continuous-max-rounds N` | int | 6 | Hard cap on continuous rounds (max 6) |
 | `--require-model-success` / `--no-require-model-success` | bool | True | Fail if model call errors |
+| `--randomize-model` / `--no-randomize-model` | bool | from config | Override model-order shuffling for `eval`/`judge`/`enhance` workflows |
+| `--model-random-seed` | int | from config | Deterministic seed for model shuffling |
 | `--log-verbosity` | str | from config | `quiet` `normal` `debug` `trace` |
 | `--output FILE` | Path | auto | Write JSON trajectory to file |
 
@@ -109,13 +113,46 @@ promptbench eval-all <artifact_type> [OPTIONS]
 
 | Argument | Values |
 |---|---|
-| `artifact_type` | `skills` `prompts` `agents` `tools` |
+| `artifact_type` | `skills` `prompts` `agents` `tools` `instructions` |
 
 Accepts the same flags as `eval` (minus `target` — discovers all targets automatically).
 
 **Auto output naming:** `.promptbench/reports/eval-all-<type>-<UTC>.json`
 
 **Output:** Aggregate summary: total / passed / failed / errored runs.
+
+---
+
+## `eval-merge`
+
+Merge multiple targets of the same artifact type, seed initial eval tests, and run `eval` with loop=10.
+
+```
+promptbench eval-merge <artifact_type> <target...> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Values |
+|---|---|
+| `artifact_type` | `skills` `prompts` `agents` `tools` `instructions` |
+| `target...` | Two or more targets of the same type |
+
+**Flags:**
+
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `--name` | str | first target stem | Base name for merged artifact/eval files |
+| `--concurrency N` | int | auto | Parallel test workers for follow-up eval |
+| `--require-model-success` / `--no-require-model-success` | bool | True | Fail if model call errors |
+| `--randomize-model` / `--no-randomize-model` | bool | from config | Override model-order shuffling for `eval`/`judge`/`enhance` workflows |
+| `--model-random-seed` | int | from config | Deterministic seed for model shuffling |
+| `--log-verbosity` | str | from config | `quiet` `normal` `debug` `trace` |
+
+**Output:**
+- Writes merged artifact under `<artifact_root>/_merged/`
+- Writes generated eval definition under `.promptbench/evals/`
+- Executes eval immediately with `loop=10`
 
 ---
 
