@@ -6,6 +6,7 @@ import typer
 
 from promptbench.cli.commands.eval import eval_command
 from promptbench.cli.commands.eval_all import eval_all_command
+from promptbench.cli.commands.eval_generate import eval_generate_command
 from promptbench.cli.commands.eval_merge import eval_merge_command
 from promptbench.cli.commands.init import init_command
 from promptbench.cli.commands.report import report_command
@@ -270,6 +271,47 @@ def eval_merge(
         name=name,
         concurrency=concurrency,
         require_model_success=require_model_success,
+        randomize_model=randomize_model,
+        model_random_seed=model_random_seed,
+        log_verbosity=_validate_log_verbosity(log_verbosity),
+        config=config,
+        repo=repo,
+    )
+
+
+@app.command("eval-generate")
+def eval_generate(
+    artifact_type: ArtifactType,
+    target: str,
+    name: str | None = typer.Option(
+        None,
+        "--name",
+        help="Optional base name for generated eval file.",
+    ),
+    randomize_model: bool | None = typer.Option(
+        None,
+        "--randomize-model/--no-randomize-model",
+        help="Override model randomization across eval/judge workflows.",
+    ),
+    model_random_seed: int | None = typer.Option(
+        None,
+        "--model-random-seed",
+        help="Seed for deterministic model randomization.",
+    ),
+    log_verbosity: str | None = typer.Option(
+        None,
+        "--log-verbosity",
+        help="Logging verbosity: quiet|normal|debug|trace.",
+    ),
+    config: Path = typer.Option(
+        Path("promptbench.yaml"), "--config", help="Path to config file."
+    ),
+    repo: Path = typer.Option(Path("."), "--repo", help="Project root."),
+) -> None:
+    eval_generate_command(
+        artifact_type=artifact_type,
+        target=target,
+        name=name,
         randomize_model=randomize_model,
         model_random_seed=model_random_seed,
         log_verbosity=_validate_log_verbosity(log_verbosity),

@@ -16,6 +16,35 @@ from promptbench.workflows.pydantic_models import EvalSeedModelOutput
 _MAX_PROMPT_CHARS = 9000
 
 
+def _artifact_specific_instructions(artifact_type: ArtifactType) -> list[str]:
+    if artifact_type == ArtifactType.SKILLS:
+        return [
+            "Include tests for step clarity, prerequisites, and expected outputs.",
+            "Include at least one test for concrete examples and actionability.",
+        ]
+    if artifact_type == ArtifactType.AGENTS:
+        return [
+            "Include tests for tool-use constraints and instruction hierarchy adherence.",
+            "Include at least one test for refusal/safety behavior under risky input.",
+        ]
+    if artifact_type == ArtifactType.PROMPTS:
+        return [
+            "Include tests for response format compliance and instruction fidelity.",
+            "Include at least one test that checks robustness to ambiguous input.",
+        ]
+    if artifact_type == ArtifactType.TOOLS:
+        return [
+            "Include tests for argument/schema correctness and error handling guidance.",
+            "Include at least one test for safety boundaries and non-destructive behavior.",
+        ]
+    if artifact_type == ArtifactType.INSTRUCTIONS:
+        return [
+            "Include tests for policy compliance and conflict resolution between rules.",
+            "Include at least one test for concise, deterministic execution guidance.",
+        ]
+    return []
+
+
 def _seed_agent(model_name: str) -> Agent[None, EvalSeedModelOutput]:
     return cast(
         Agent[None, EvalSeedModelOutput],
@@ -89,6 +118,7 @@ def generate_eval_seed_tests(
             "Return between 3 and 5 tests.",
             "Cover baseline quality, edge handling, and correctness.",
             "Keep prompts specific and non-redundant.",
+            *_artifact_specific_instructions(artifact_type),
         ],
     }
     serialized_payload = json.dumps(payload, ensure_ascii=True)

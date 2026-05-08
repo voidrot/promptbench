@@ -139,6 +139,34 @@ Accepts the same flags as `eval` (minus `target` — discovers all targets autom
 
 ---
 
+## `eval-generate`
+
+Generate an eval definition for a single artifact target.
+
+```
+promptbench eval-generate <artifact_type> <target> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Values |
+|---|---|
+| `artifact_type` | `skills` `prompts` `agents` `tools` `instructions` |
+| `target` | Artifact filename or absolute path |
+
+**Flags:**
+
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `--name` | str | artifact stem | Base name for generated eval file |
+| `--randomize-model` / `--no-randomize-model` | bool | from config | Override model-order shuffling for `eval`/`judge` workflows |
+| `--model-random-seed` | int | from config | Deterministic seed for model shuffling |
+| `--log-verbosity` | str | from config | `quiet` `normal` `debug` `trace` |
+
+**Output:** writes one generated eval definition to `.promptbench/evals/*.eval.yaml`.
+
+---
+
 ## `eval-merge`
 
 Merge multiple targets of the same artifact type, seed initial eval tests, and run `eval` with loop=10.

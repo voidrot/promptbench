@@ -78,6 +78,7 @@ mise x -- uv run -- promptbench --help
 | `review <type> <path>`  | Validate and review a single artifact                             |
 | `eval <type> <path>`    | Run eval suite against an artifact                                |
 | `eval-all <type>`       | Discover and evaluate all artifacts of a type                     |
+| `eval-generate <type> <path>` | Generate an eval definition from an artifact path            |
 | `eval-merge <type> ...` | Merge multiple targets into one artifact and auto-evaluate        |
 | `report`                | Print a run summary (JSON or Markdown)                            |
 | `serve`                 | Start the local web dashboard                                     |
