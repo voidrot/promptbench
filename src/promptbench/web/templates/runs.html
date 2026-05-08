@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Runs</h1>
+  <span class="muted small">{{ total }} rows</span>
+</div>
+
+<form method="get" class="controls">
+  <select name="status">
+    <option value="" {% if not status %}selected{% endif %}>all status</option>
+    <option value="completed" {% if status == 'completed' %}selected{% endif %}>completed</option>
+    <option value="failed" {% if status == 'failed' %}selected{% endif %}>failed</option>
+    <option value="running" {% if status == 'running' %}selected{% endif %}>running</option>
+  </select>
+  <select name="kind">
+    <option value="" {% if not kind %}selected{% endif %}>all kinds</option>
+    <option value="review" {% if kind == 'review' %}selected{% endif %}>review</option>
+    <option value="eval" {% if kind == 'eval' %}selected{% endif %}>eval</option>
+    <option value="enhance" {% if kind == 'enhance' %}selected{% endif %}>enhance</option>
+  </select>
+  <input type="number" name="page_size" min="1" max="100" value="{{ page_size }}">
+  <input type="text" name="since" value="{{ since }}" placeholder="since (YYYY-MM-DD or ISO)">
+  <input type="text" name="until" value="{{ until }}" placeholder="until (YYYY-MM-DD or ISO)">
+  <select name="sort">
+    <option value="id" {% if sort == 'id' %}selected{% endif %}>sort: id</option>
+    <option value="kind" {% if sort == 'kind' %}selected{% endif %}>sort: kind</option>
+    <option value="status" {% if sort == 'status' %}selected{% endif %}>sort: status</option>
+    <option value="trigger" {% if sort == 'trigger' %}selected{% endif %}>sort: trigger</option>
+    <option value="started_at" {% if sort == 'started_at' %}selected{% endif %}>sort: started</option>
+    <option value="finished_at" {% if sort == 'finished_at' %}selected{% endif %}>sort: finished</option>
+  </select>
+  <select name="dir">
+    <option value="desc" {% if sort_dir == 'desc' %}selected{% endif %}>desc</option>
+    <option value="asc" {% if sort_dir == 'asc' %}selected{% endif %}>asc</option>
+  </select>
+  <button type="submit">Apply</button>
+</form>
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Kind</th><th>Status</th><th>Trigger</th><th>Started</th><th>Finished</th></tr></thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td><a href="/runs/{{ run.id }}">{{ run.id }}</a></td>
+        <td>{{ run.run_kind }}</td>
+        <td><span class="status {{ run.status }}">{{ run.status }}</span></td>
+        <td>{{ run.trigger }}</td>
+        <td class="small">{{ run.started_at }}</td>
+        <td class="small">{{ run.finished_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="controls">
+  {% if page > 1 %}
+  <a href="?status={{ status }}&kind={{ kind }}&since={{ since }}&until={{ until }}&sort={{ sort }}&dir={{ sort_dir }}&page={{ page - 1 }}&page_size={{ page_size }}">Previous</a>
+  {% endif %}
+  <span class="muted small">Page {{ page }}</span>
+  {% if (page * page_size) < total %}
+  <a href="?status={{ status }}&kind={{ kind }}&since={{ since }}&until={{ until }}&sort={{ sort }}&dir={{ sort_dir }}&page={{ page + 1 }}&page_size={{ page_size }}">Next</a>
+  {% endif %}
+</div>
+{% endblock %}

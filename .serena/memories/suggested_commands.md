@@ -1,0 +1,1 @@
+Development commands (expected): `python -m pytest` for tests, `python -m promptbench --help` or `promptbench --help` for CLI, `python -m promptbench serve --help` for dashboard command, and standard Linux utilities (`git status`, `ls`, `rg`).

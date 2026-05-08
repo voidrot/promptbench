@@ -1,0 +1,1 @@
+PromptBench is a Python CLI project for testing, evaluating, and improving agent artifacts (skills/prompts/agents/tools). It uses Typer for CLI, Pydantic/PydanticAI for config + LLM interactions, SQLModel + SQLite for persistent reporting, and Flask + Jinja2 for a metrics/log dashboard.

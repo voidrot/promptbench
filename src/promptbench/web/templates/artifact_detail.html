@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Artifact {{ artifact.id }}</h1>
+  <span class="muted small">{{ artifact.artifact_type }}</span>
+</div>
+
+<section class="grid kpi">
+  <article class="card"><div class="muted small">Name</div><div class="kpi-value">{{ artifact.name }}</div></article>
+  <article class="card"><div class="muted small">Path</div><div class="small">{{ artifact.path }}</div></article>
+  <article class="card"><div class="muted small">Measurements</div><div class="kpi-value">{{ measurements|length }}</div></article>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <h3>Token Trend</h3>
+  <div class="chart-box">
+    <canvas id="artifactTokens"></canvas>
+  </div>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <h3>Measurements</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Run ID</th>
+          <th>Lines</th>
+          <th>Token Estimate</th>
+          <th>Max Lines</th>
+          <th>Max Tokens</th>
+          <th>Within Limits</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in measurements %}
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.run_id }}</td>
+          <td>{{ row.line_count }}</td>
+          <td>{{ row.token_count_estimate }}</td>
+          <td>{{ row.max_line_count }}</td>
+          <td>{{ row.max_token_count }}</td>
+          <td>{{ row.within_limits }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <h3>Linked Runs</h3>
+  <ul>
+    {% for run in runs %}
+    <li><a href="/runs/{{ run.id }}">run {{ run.id }}</a> · {{ run.run_kind }} · {{ run.status }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<script id="artifact-token-labels" type="application/json">{{ measurement_labels | tojson }}</script>
+<script id="artifact-token-values" type="application/json">{{ measurement_tokens | tojson }}</script>
+<script>
+  const tokenCtx = document.getElementById("artifactTokens");
+  if (tokenCtx) {
+    const labels = JSON.parse(document.getElementById("artifact-token-labels").textContent || "[]");
+    const values = JSON.parse(document.getElementById("artifact-token-values").textContent || "[]");
+    new Chart(tokenCtx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Token estimate",
+          data: values,
+          borderColor: "#1d4ed8",
+          backgroundColor: "rgba(29, 78, 216, 0.12)",
+          fill: true,
+          tension: 0.2,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+</script>
+{% endblock %}

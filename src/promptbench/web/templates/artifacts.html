@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Artifacts</h1>
+  <span class="muted small">{{ artifacts|length }} shown</span>
+</div>
+
+<form method="get" class="controls">
+  <select name="type">
+    <option value="" {% if not artifact_type %}selected{% endif %}>all types</option>
+    <option value="skills" {% if artifact_type == 'skills' %}selected{% endif %}>skills</option>
+    <option value="prompts" {% if artifact_type == 'prompts' %}selected{% endif %}>prompts</option>
+    <option value="agents" {% if artifact_type == 'agents' %}selected{% endif %}>agents</option>
+    <option value="tools" {% if artifact_type == 'tools' %}selected{% endif %}>tools</option>
+  </select>
+  <input type="text" name="since" value="{{ since }}" placeholder="since (YYYY-MM-DD or ISO)">
+  <input type="text" name="until" value="{{ until }}" placeholder="until (YYYY-MM-DD or ISO)">
+  <select name="sort">
+    <option value="updated_at" {% if sort == 'updated_at' %}selected{% endif %}>sort: updated</option>
+    <option value="id" {% if sort == 'id' %}selected{% endif %}>sort: id</option>
+    <option value="type" {% if sort == 'type' %}selected{% endif %}>sort: type</option>
+    <option value="name" {% if sort == 'name' %}selected{% endif %}>sort: name</option>
+    <option value="path" {% if sort == 'path' %}selected{% endif %}>sort: path</option>
+  </select>
+  <select name="dir">
+    <option value="desc" {% if sort_dir == 'desc' %}selected{% endif %}>desc</option>
+    <option value="asc" {% if sort_dir == 'asc' %}selected{% endif %}>asc</option>
+  </select>
+  <button type="submit">Apply</button>
+</form>
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Type</th><th>Name</th><th>Path</th><th>Updated</th></tr></thead>
+    <tbody>
+      {% for artifact in artifacts %}
+      <tr>
+        <td><a href="/artifacts/{{ artifact.id }}">{{ artifact.id }}</a></td>
+        <td>{{ artifact.artifact_type }}</td>
+        <td>{{ artifact.name }}</td>
+        <td class="small">{{ artifact.path }}</td>
+        <td class="small">{{ artifact.updated_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

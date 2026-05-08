@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Operational Dashboard</h1>
+  <span class="muted small">Latest eval and improvement health</span>
+</div>
+
+<section class="grid kpi">
+  <article class="card">
+    <div class="muted small">Total runs</div>
+    <div class="kpi-value">{{ total_runs }}</div>
+  </article>
+  <article class="card">
+    <div class="muted small">Completed</div>
+    <div class="kpi-value">{{ completed_runs }}</div>
+  </article>
+  <article class="card">
+    <div class="muted small">Failed</div>
+    <div class="kpi-value">{{ failed_runs }}</div>
+  </article>
+  <article class="card">
+    <div class="muted small">Completion rate</div>
+    <div class="kpi-value">{{ "%.1f"|format(pass_rate * 100) }}%</div>
+  </article>
+  <article class="card">
+    <div class="muted small">Payload logs</div>
+    <div class="kpi-value">{{ payload_logs_count }}</div>
+  </article>
+  <article class="card">
+    <div class="muted small">Model events</div>
+    <div class="kpi-value">{{ model_events_count }}</div>
+  </article>
+</section>
+
+<section class="two-col" style="margin-top: 16px;">
+  <article class="card">
+    <h3>Score Trend</h3>
+    <div class="chart-box">
+      <canvas id="scoreTrend"></canvas>
+    </div>
+  </article>
+  <article class="card">
+    <h3>Stop Reasons</h3>
+    <div class="chart-box">
+      <canvas id="stopReasons"></canvas>
+    </div>
+  </article>
+</section>
+
+<section class="two-col" style="margin-top: 16px;">
+  <article class="card">
+    <h3>Recent Runs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Kind</th><th>Status</th><th>Started</th></tr></thead>
+        <tbody>
+          {% for run in recent_runs %}
+          <tr>
+            <td><a href="/runs/{{ run.id }}">{{ run.id }}</a></td>
+            <td>{{ run.run_kind }}</td>
+            <td><span class="status {{ run.status }}">{{ run.status }}</span></td>
+            <td class="small">{{ run.started_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article class="card">
+    <h3>Needs Attention</h3>
+    {% if failing_runs %}
+      <ul>
+        {% for run in failing_runs %}
+        <li><a href="/runs/{{ run.id }}">run {{ run.id }}</a> · {{ run.run_kind }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No failed runs in recent activity.</p>
+    {% endif %}
+  </article>
+</section>
+
+<script id="score-labels" type="application/json">{{ chart_labels | tojson }}</script>
+<script id="score-values" type="application/json">{{ chart_scores | tojson }}</script>
+<script id="stop-reasons" type="application/json">{{ stop_reason_counts | tojson }}</script>
+
+<script>
+  const trendCtx = document.getElementById("scoreTrend");
+  if (trendCtx) {
+    const labels = JSON.parse(document.getElementById("score-labels").textContent || "[]");
+    const values = JSON.parse(document.getElementById("score-values").textContent || "[]");
+    new Chart(trendCtx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Score %",
+          data: values,
+          borderColor: "#1d4ed8",
+          backgroundColor: "rgba(29, 78, 216, 0.15)",
+          fill: true,
+          tension: 0.25,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  const stopCtx = document.getElementById("stopReasons");
+  if (stopCtx) {
+    const stopData = JSON.parse(document.getElementById("stop-reasons").textContent || "{}");
+    new Chart(stopCtx, {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(stopData),
+        datasets: [{
+          data: Object.values(stopData),
+          backgroundColor: ["#0f766e", "#1d4ed8", "#b45309", "#b91c1c", "#6d28d9"],
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+</script>
+{% endblock %}

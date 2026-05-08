@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Run {{ run.id }}</h1>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <button type="button" id="modelHealthcheckBtn">Healthcheck models</button>
+    <span class="status {{ run.status }}">{{ run.status }}</span>
+  </div>
+</div>
+
+<section class="card" id="modelHealthcheckPanel" style="display: none; margin-bottom: 16px;">
+  <h3>Model Healthcheck</h3>
+  <div id="healthcheckStatus" class="small muted">not run</div>
+  <div class="table-wrap" style="margin-top: 8px;">
+    <table>
+      <thead><tr><th>Workflow</th><th>Provider</th><th>Model</th><th>Status</th><th>HTTP</th><th>Error</th></tr></thead>
+      <tbody id="healthcheckRows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="grid kpi">
+  <article class="card"><div class="muted small">Kind</div><div class="kpi-value">{{ run.run_kind }}</div></article>
+  <article class="card"><div class="muted small">Started</div><div class="small">{{ run.started_at }}</div></article>
+  <article class="card"><div class="muted small">Finished</div><div class="small">{{ run.finished_at }}</div></article>
+  <article class="card"><div class="muted small">Duration (ms)</div><div class="kpi-value">{{ run.duration_ms or 0 }}</div></article>
+</section>
+
+{% if run_context %}
+<section class="card" style="margin-top: 16px;">
+  <h3>Run Context</h3>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><th>Workflow</th><td>{{ run_context.workflow }}</td></tr>
+        <tr><th>Artifact</th><td>{{ run_context.artifact_type }} / {{ run_context.target }}</td></tr>
+        <tr><th>Require model success</th><td>{{ run_context.require_model_success }}</td></tr>
+        <tr><th>Log verbosity</th><td>{{ run_context.log_verbosity }}</td></tr>
+        <tr><th>Concurrency</th><td>{{ run_context.requested_concurrency }} -> {{ run_context.effective_concurrency }} ({{ run_context.concurrency_source }})</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<section class="two-col" style="margin-top: 16px;">
+  <article class="card">
+    <h3>Eval Cases</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Eval</th><th>Score</th><th>Passed</th></tr></thead>
+        <tbody>
+          {% for case in eval_cases %}
+          <tr>
+            <td>{{ case.eval_id }}</td>
+            <td>{{ "%.3f"|format(case.score) }}</td>
+            <td>{{ case.passed }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article class="card">
+    <h3>Metrics</h3>
+    <div class="chart-box">
+      <canvas id="runMetrics"></canvas>
+    </div>
+    <div class="table-wrap" style="margin-top: 10px;">
+      <table>
+        <thead><tr><th>Name</th><th>Value</th><th>Weight</th></tr></thead>
+        <tbody>
+          {% for metric in metrics %}
+          <tr>
+            <td>{{ metric.metric_name }}</td>
+            <td>{{ metric.metric_value }}</td>
+            <td>{{ metric.weight }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section class="two-col" style="margin-top: 16px;">
+  <article class="card">
+    <h3>Model Invocation Events</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Stage</th><th>Provider</th><th>Model</th><th>Latency</th><th>Success</th><th>Error</th></tr></thead>
+        <tbody>
+          {% for event in model_events %}
+          <tr>
+            <td>{{ event.id }}</td>
+            <td>{{ event.stage }}</td>
+            <td>{{ event.provider_id }}</td>
+            <td>{{ event.model }}</td>
+            <td>{{ event.latency_ms }}</td>
+            <td>{{ event.success }}</td>
+            <td class="small">{{ event.error_type }} {{ event.error_message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article class="card">
+    <h3>Loop Progress</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Iteration</th><th>Score</th><th>Passed</th><th>Stop reason</th></tr></thead>
+        <tbody>
+          {% for row in loop_rows %}
+          <tr>
+            <td>{{ row.iteration }}</td>
+            <td>{{ row.score }}</td>
+            <td>{{ row.passed }}</td>
+            <td>{{ row.stop_reason }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section class="two-col" style="margin-top: 16px;">
+  <article class="card">
+    <h3>Failure Diagnostics</h3>
+    <section class="grid kpi" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 12px;">
+      <article class="card"><div class="muted small">Failures</div><div class="kpi-value">{{ recent_failure_events|length }}</div></article>
+      <article class="card"><div class="muted small">Types</div><div class="kpi-value">{{ failure_by_type|length }}</div></article>
+      <article class="card"><div class="muted small">Stages</div><div class="kpi-value">{{ failure_by_stage|length }}</div></article>
+    </section>
+
+    <div class="table-wrap" style="margin-bottom: 10px;">
+      <table>
+        <thead><tr><th>Error type</th><th class="num-col">Count</th></tr></thead>
+        <tbody>
+          {% for row in failure_by_type %}
+          <tr><td>{{ row.error_type }}</td><td class="num-col">{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom: 10px;">
+      <table>
+        <thead><tr><th>Provider status</th><th class="num-col">Count</th></tr></thead>
+        <tbody>
+          {% for row in failure_by_status %}
+          <tr><td>{{ row.provider_status_code }}</td><td class="num-col">{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th class="num-col">Count</th></tr></thead>
+        <tbody>
+          {% for row in failure_by_stage %}
+          <tr><td>{{ row.stage }}</td><td class="num-col">{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <h3>Recent Failure Events</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Stage</th><th>Provider</th><th>Type</th><th>Status</th><th>Message</th><th>Payload</th></tr></thead>
+        <tbody>
+          {% for row in recent_failure_events %}
+          <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.workflow }}/{{ row.stage }}</td>
+            <td>{{ row.provider_id }}</td>
+            <td>{{ row.error_type }}</td>
+            <td>{{ row.provider_status_code }}</td>
+            <td class="small">{{ row.error_message }}</td>
+            <td class="small">
+              {% if row.payload_log_id %}
+              <a href="#payload-log-{{ row.payload_log_id }}" class="payload-link">#{{ row.payload_log_id }}</a>
+              {% else %}
+              -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <h3>Payload Logs (prompt with nested responses)</h3>
+  <div class="controls" style="margin-top: 8px; margin-bottom: 8px;">
+    <button type="button" id="expandPayloads">Expand all</button>
+    <button type="button" id="collapsePayloads">Collapse all</button>
+  </div>
+  <div class="table-wrap">
+    {% for group in payload_groups %}
+    <details class="card payload-group" style="margin-bottom: 12px; background: #f8fafc;" {% if loop.first %}open{% endif %}>
+      <summary class="small" style="cursor: pointer; font-weight: 600;">
+        event={{ group.invocation_event_id }} · {{ group.workflow }}/{{ group.stage }}
+      </summary>
+      <div style="margin-top: 8px;">
+        {% if group.prompt %}
+        <div style="margin-top: 8px;">
+          <strong>prompt</strong>
+          <div class="mono">{{ group.prompt.payload_text }}</div>
+        </div>
+        {% endif %}
+        {% if group.response %}
+        <div style="margin-top: 8px; margin-left: 20px; border-left: 2px solid #dbe3ef; padding-left: 10px;">
+          <strong>response</strong>
+          <div class="mono">{{ group.response.payload_text }}</div>
+        </div>
+        {% endif %}
+        {% if group.response_raw %}
+        <div style="margin-top: 8px; margin-left: 20px; border-left: 2px dashed #bfdbfe; padding-left: 10px;">
+          <strong>raw response</strong>
+          <div class="mono">{{ group.response_raw.payload_text }}</div>
+        </div>
+        {% endif %}
+        {% if group.error %}
+        <div id="payload-log-{{ group.error.id }}" style="margin-top: 8px; margin-left: 20px; border-left: 2px solid #ef4444; padding-left: 10px;">
+          <strong>error diagnostics</strong>
+          <div class="mono">{{ group.error.payload_text }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <h3>Findings</h3>
+  {% if findings %}
+  <ul>
+    {% for finding in findings %}
+    <li>[{{ finding.severity }}] {{ finding.message }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No review findings for this run.</p>
+  {% endif %}
+</section>
+
+<script id="run-metric-labels" type="application/json">{{ metric_chart_labels | tojson }}</script>
+<script id="run-metric-values" type="application/json">{{ metric_chart_values | tojson }}</script>
+<script>
+  const metricCanvas = document.getElementById("runMetrics");
+  if (metricCanvas) {
+    const labels = JSON.parse(document.getElementById("run-metric-labels").textContent || "[]");
+    const values = JSON.parse(document.getElementById("run-metric-values").textContent || "[]");
+    new Chart(metricCanvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Metric value",
+          data: values,
+          backgroundColor: "rgba(15, 118, 110, 0.35)",
+          borderColor: "#0f766e",
+          borderWidth: 1,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  const expandBtn = document.getElementById("expandPayloads");
+  const collapseBtn = document.getElementById("collapsePayloads");
+  const payloadGroups = Array.from(document.querySelectorAll("details.payload-group"));
+
+  if (expandBtn) {
+    expandBtn.addEventListener("click", () => {
+      payloadGroups.forEach((el) => {
+        el.open = true;
+      });
+    });
+  }
+
+  if (collapseBtn) {
+    collapseBtn.addEventListener("click", () => {
+      payloadGroups.forEach((el) => {
+        el.open = false;
+      });
+    });
+  }
+
+  const openPayloadFromHash = () => {
+    const hash = window.location.hash || "";
+    if (!hash.startsWith("#payload-log-")) {
+      return;
+    }
+    const target = document.querySelector(hash);
+    if (!target) {
+      return;
+    }
+    const group = target.closest("details.payload-group");
+    if (group) {
+      group.open = true;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  openPayloadFromHash();
+  window.addEventListener("hashchange", openPayloadFromHash);
+
+  const healthcheckBtn = document.getElementById("modelHealthcheckBtn");
+  const healthcheckPanel = document.getElementById("modelHealthcheckPanel");
+  const healthcheckStatus = document.getElementById("healthcheckStatus");
+  const healthcheckRows = document.getElementById("healthcheckRows");
+
+  if (healthcheckBtn && healthcheckPanel && healthcheckStatus && healthcheckRows) {
+    healthcheckBtn.addEventListener("click", async () => {
+      healthcheckPanel.style.display = "block";
+      healthcheckStatus.textContent = "running...";
+      healthcheckRows.innerHTML = "";
+      try {
+        const response = await fetch("/api/healthcheck/models", { method: "GET" });
+        const data = await response.json();
+        const checks = Array.isArray(data.checks) ? data.checks : [];
+        checks.forEach((row) => {
+          const tr = document.createElement("tr");
+          const okLabel = row.ok ? "ok" : "failed";
+          tr.innerHTML = `
+            <td>${row.workflow ?? "-"}</td>
+            <td>${row.provider_id ?? "-"}</td>
+            <td>${row.model ?? "-"}</td>
+            <td>${okLabel}</td>
+            <td>${row.status_code ?? "-"}</td>
+            <td class="small">${row.error ?? ""}</td>
+          `;
+          healthcheckRows.appendChild(tr);
+        });
+        healthcheckStatus.textContent = data.ok
+          ? "all configured models responded"
+          : "one or more configured models failed";
+      } catch (error) {
+        healthcheckStatus.textContent = `healthcheck failed: ${String(error)}`;
+      }
+    });
+  }
+</script>
+{% endblock %}

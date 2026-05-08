@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+  <h1>Metrics</h1>
+  <span class="muted small">{{ total }} rows</span>
+</div>
+
+<form method="get" class="controls">
+  <input type="text" name="name" value="{{ metric_name }}" placeholder="metric name">
+  <input type="number" name="page_size" min="1" max="200" value="{{ page_size }}">
+  <input type="text" name="since" value="{{ since }}" placeholder="since (YYYY-MM-DD or ISO)">
+  <input type="text" name="until" value="{{ until }}" placeholder="until (YYYY-MM-DD or ISO)">
+  <select name="sort">
+    <option value="id" {% if sort == 'id' %}selected{% endif %}>sort: id</option>
+    <option value="eval_case_id" {% if sort == 'eval_case_id' %}selected{% endif %}>sort: eval case</option>
+    <option value="name" {% if sort == 'name' %}selected{% endif %}>sort: name</option>
+    <option value="value" {% if sort == 'value' %}selected{% endif %}>sort: value</option>
+    <option value="weight" {% if sort == 'weight' %}selected{% endif %}>sort: weight</option>
+  </select>
+  <select name="dir">
+    <option value="desc" {% if sort_dir == 'desc' %}selected{% endif %}>desc</option>
+    <option value="asc" {% if sort_dir == 'asc' %}selected{% endif %}>asc</option>
+  </select>
+  <button type="submit">Apply</button>
+</form>
+
+<section class="card">
+  <h3>Metric Trend (page slice)</h3>
+  <div class="chart-box">
+    <canvas id="metricTrend"></canvas>
+  </div>
+</section>
+
+<section class="card" style="margin-top: 16px;">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Eval Case</th><th>Name</th><th>Value</th><th>Weight</th><th>Weighted</th></tr></thead>
+      <tbody>
+        {% for metric in metrics %}
+        <tr>
+          <td>{{ metric.id }}</td>
+          <td>{{ metric.eval_case_id }}</td>
+          <td>{{ metric.metric_name }}</td>
+          <td>{{ metric.metric_value }}</td>
+          <td>{{ metric.weight }}</td>
+          <td>{{ metric.weighted_value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="controls">
+  {% if page > 1 %}
+  <a href="?name={{ metric_name }}&since={{ since }}&until={{ until }}&sort={{ sort }}&dir={{ sort_dir }}&page={{ page - 1 }}&page_size={{ page_size }}">Previous</a>
+  {% endif %}
+  <span class="muted small">Page {{ page }}</span>
+  {% if (page * page_size) < total %}
+  <a href="?name={{ metric_name }}&since={{ since }}&until={{ until }}&sort={{ sort }}&dir={{ sort_dir }}&page={{ page + 1 }}&page_size={{ page_size }}">Next</a>
+  {% endif %}
+</div>
+
+<script id="metric-labels" type="application/json">{{ chart_labels | tojson }}</script>
+<script id="metric-values" type="application/json">{{ chart_values | tojson }}</script>
+<script>
+  const metricCanvas = document.getElementById("metricTrend");
+  if (metricCanvas) {
+    const labels = JSON.parse(document.getElementById("metric-labels").textContent || "[]");
+    const values = JSON.parse(document.getElementById("metric-values").textContent || "[]");
+    new Chart(metricCanvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "metric value",
+          data: values,
+          borderColor: "#0f766e",
+          backgroundColor: "rgba(15, 118, 110, 0.14)",
+          fill: true,
+          tension: 0.3,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+id: 'sample-skill-eval'
+artifact_type: 'skills'
+target: 'sample-skill.md'
+# model: "llmstudio/nvidia/nemotron-3-nano-4b"
+# fallback_models:
+# - "llmstudio/essentialai/rnj-1"
+object_limits:
+  max_line_count: 2000
+  max_token_count: 20000
+tests:
+  - id: 'core'
+    prompts:
+      - id: 'p1'
+        language: 'en'
+        text: 'Evaluate whether this skill is clear, structured, and actionable.'
+      - id: 'p2'
+        language: 'en'
+        text: 'Score this skill for clarity and testability.'
+    expected:
+      assertions:
+        - type: 'contains_any'
+          values: ['example', 'structured']

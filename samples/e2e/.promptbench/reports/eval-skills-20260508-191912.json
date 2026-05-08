@@ -1,0 +1,10 @@
+{
+  "artifact_type": "skills",
+  "target": "sample-skill",
+  "enhance": false,
+  "loop": null,
+  "concurrency": null,
+  "continuous": false,
+  "continuous_max_rounds": 6,
+  "outcomes": []
+}

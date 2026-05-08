@@ -1,0 +1,90 @@
+version: 1
+
+project:
+  name: 'promptbench-local-e2e'
+  root: 'samples/e2e'
+
+objects:
+  defaults:
+    max_line_count: 1200
+    max_token_count: 16000
+  skills:
+    max_line_count: 1600
+  prompts:
+    max_token_count: 12000
+  agents: {}
+  tools: {}
+
+artifacts:
+  prompts:
+    root_path: 'prompts/'
+  skills:
+    root_path: 'skills/'
+    improve_references: true
+    improve_scripts: true
+  agents:
+    root_path: 'agents/'
+  tools:
+    root_path: 'tools/'
+
+providers:
+  default_kind: openai-compatible
+  defaults:
+    timeout_seconds: 60
+    max_retries: 2
+    temperature: 0.2
+  registry:
+    lmstudio:
+      kind: openai-compatible
+      base_url: 'http://localhost:1234/v1'
+      api_key_env: 'lmstudio_API_KEY'
+      max_concurrency: 2
+  workflows:
+    review:
+      provider_kind: lmstudio
+      model: 'lmstudio/google/gemma-4-e4b'
+      # fallback_models: ['lmstudio/essentialai/rnj-1']
+    eval:
+      provider_kind: lmstudio
+      model: 'lmstudio/google/gemma-4-e4b'
+      # fallback_models: ['lmstudio/essentialai/rnj-1']
+    enhance:
+      provider_kind: lmstudio
+      model: 'lmstudio/google/gemma-4-e4b'
+      # fallback_models: ['lmstudio/essentialai/rnj-1']
+
+workflows:
+  review:
+    enabled: true
+    max_findings: 25
+  eval:
+    enabled: true
+    metrics:
+      [
+        'clarity',
+        'specificity',
+        'safety',
+        'structure',
+        'testability',
+        'reproducibility',
+      ]
+    pass_threshold: 0.8
+    definition_mode: 'discover'
+    discover_path: 'evals/'
+    inline: []
+  enhance:
+    enabled: true
+    write_mode: 'apply'
+    run_in_eval_loop: true
+
+output:
+  database_path: '.promptbench/promptbench.db'
+  overwrite: false
+  reports_dir: '.promptbench/reports'
+
+policies:
+  fail_on_severity: 'error'
+  fail_on_score_below: 0.7
+  max_workers: 1
+  require_model_success: true
+  log_verbosity: 'normal'

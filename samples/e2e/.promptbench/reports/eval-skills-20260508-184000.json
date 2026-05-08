@@ -1,0 +1,25 @@
+{
+  "artifact_type": "skills",
+  "target": "sample-skill.md",
+  "enhance": true,
+  "loop": 1,
+  "concurrency": 2,
+  "continuous": false,
+  "continuous_max_rounds": 6,
+  "outcomes": [
+    {
+      "run_id": 19,
+      "eval_id": "sample-skill-eval",
+      "score": 0.875,
+      "passed": true,
+      "stop_reason": "threshold_met",
+      "iterations": 1,
+      "best_iteration": 1,
+      "continuous_rounds": 1,
+      "changed": false,
+      "concurrency_requested": 2,
+      "concurrency_effective": 2,
+      "concurrency_source": "cli"
+    }
+  ]
+}

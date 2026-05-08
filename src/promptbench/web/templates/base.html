@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PromptBench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">PromptBench</div>
+        <nav class="nav-links">
+          <a href="/" class="{% if request.path == '/' %}active{% endif %}">Dashboard</a>
+          <a href="/runs" class="{% if request.path.startswith('/runs') %}active{% endif %}">Runs</a>
+          <a href="/artifacts" class="{% if request.path.startswith('/artifacts') %}active{% endif %}">Artifacts</a>
+          <a href="/metrics" class="{% if request.path.startswith('/metrics') %}active{% endif %}">Metrics</a>
+        </nav>
+      </aside>
+      <main class="main">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

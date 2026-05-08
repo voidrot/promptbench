@@ -1,0 +1,1 @@
+Use typed Python code with clear dataclass/Pydantic/SQLModel models, snake_case for functions/variables, PascalCase for classes, and concise module-level responsibilities (config/provider/workflows/reporting/web). Keep secrets in env vars only.

@@ -1,0 +1,1 @@
+After implementing changes: run test suite (`pytest`), run key CLI smoke checks (`promptbench init/review/eval/report/serve --help`), verify SQLite schema initialization, and ensure docs/README are updated.
