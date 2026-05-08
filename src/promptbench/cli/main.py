@@ -6,6 +6,7 @@ import typer
 
 from promptbench.cli.commands.eval import eval_command
 from promptbench.cli.commands.eval_all import eval_all_command
+from promptbench.cli.commands.eval_merge import eval_merge_command
 from promptbench.cli.commands.init import init_command
 from promptbench.cli.commands.report import report_command
 from promptbench.cli.commands.review import review_command
@@ -173,6 +174,47 @@ def eval_all(
         require_model_success=require_model_success,
         log_verbosity=_validate_log_verbosity(log_verbosity),
         output=output,
+        config=config,
+        repo=repo,
+    )
+
+
+@app.command("eval-merge")
+def eval_merge(
+    artifact_type: ArtifactType,
+    targets: list[str] = typer.Argument(..., help="Two or more artifact targets."),
+    name: str | None = typer.Option(
+        None,
+        "--name",
+        help="Optional base name for merged outputs.",
+    ),
+    concurrency: int | None = typer.Option(
+        None,
+        "--concurrency",
+        help="Requested eval concurrency; auto-tuned when omitted.",
+    ),
+    require_model_success: bool = typer.Option(
+        True,
+        "--require-model-success/--no-require-model-success",
+        help="Require at least one successful model invocation; otherwise fail run.",
+    ),
+    log_verbosity: str | None = typer.Option(
+        None,
+        "--log-verbosity",
+        help="Logging verbosity: quiet|normal|debug|trace.",
+    ),
+    config: Path = typer.Option(
+        Path("promptbench.yaml"), "--config", help="Path to config file."
+    ),
+    repo: Path = typer.Option(Path("."), "--repo", help="Project root."),
+) -> None:
+    eval_merge_command(
+        artifact_type=artifact_type,
+        targets=targets,
+        name=name,
+        concurrency=concurrency,
+        require_model_success=require_model_success,
+        log_verbosity=_validate_log_verbosity(log_verbosity),
         config=config,
         repo=repo,
     )

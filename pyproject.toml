@@ -1,6 +1,6 @@
 [project]
 name = "promptbench"
-version = "0.1.0"
+version = "0.1.2"
 description = "A CLI tool for testing, evaluating, and refining agentic prompts, behaviors, and tool-calling skills."
 readme = "README.md"
 authors = [{ name = "Buck Brady", email = "22723438+voidrot@users.noreply.github.com" }]

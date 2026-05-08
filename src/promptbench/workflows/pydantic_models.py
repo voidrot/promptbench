@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -35,3 +37,14 @@ class EnhanceModelOutput(BaseModel):
 
 class SuggestionListOutput(BaseModel):
     suggestions: list[str] = Field(default_factory=list)
+
+
+class EvalSeedTestOutput(BaseModel):
+    id: str | None = None
+    prompt: str
+    expected: dict[str, Any] = Field(default_factory=dict)
+    references: list[str] = Field(default_factory=list)
+
+
+class EvalSeedModelOutput(BaseModel):
+    tests: list[EvalSeedTestOutput] = Field(default_factory=list)
