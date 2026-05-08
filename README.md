@@ -70,14 +70,14 @@ mise x -- uv run -- promptbench --help
 
 ## Commands
 
-| Command | Description |
-|---|---|
-| `init` | Initialize a `.promptbench/` config directory in the current repo |
-| `review <type> <path>` | Validate and review a single artifact |
-| `eval <type> <path>` | Run eval suite against an artifact |
-| `eval-all <type>` | Discover and evaluate all artifacts of a type |
-| `report` | Print a run summary (JSON or Markdown) |
-| `serve` | Start the local web dashboard |
+| Command                | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `init`                 | Initialize a `.promptbench/` config directory in the current repo |
+| `review <type> <path>` | Validate and review a single artifact                             |
+| `eval <type> <path>`   | Run eval suite against an artifact                                |
+| `eval-all <type>`      | Discover and evaluate all artifacts of a type                     |
+| `report`               | Print a run summary (JSON or Markdown)                            |
+| `serve`                | Start the local web dashboard                                     |
 
 ### eval flags
 
@@ -183,13 +183,13 @@ objects:
     max_line_count: 200
     max_token_count: 4096
   skills:
-    max_line_count: 150       # per-type override
+    max_line_count: 150 # per-type override
 
 output:
   database_path: .promptbench/runs.db
 
 policies:
-  require_model_success: true   # fail run if model call errors
+  require_model_success: true # fail run if model call errors
 
 providers:
   registry:
@@ -199,7 +199,7 @@ providers:
 
 workflows:
   enhance:
-    write_mode: apply           # rewrite artifact in-place during loop
+    write_mode: apply # rewrite artifact in-place during loop
 ```
 
 Key config keys:
@@ -266,40 +266,40 @@ promptbench serve --host 127.0.0.1 --port 8080
 
 Routes:
 
-| Route | Description |
-|---|---|
-| `/` | Overview |
-| `/runs` | All eval runs |
-| `/runs/<id>` | Single run detail |
-| `/artifacts` | All tracked artifacts |
+| Route             | Description                 |
+| ----------------- | --------------------------- |
+| `/`               | Overview                    |
+| `/runs`           | All eval runs               |
+| `/runs/<id>`      | Single run detail           |
+| `/artifacts`      | All tracked artifacts       |
 | `/artifacts/<id>` | Artifact history and scores |
-| `/metrics` | Aggregate metrics |
+| `/metrics`        | Aggregate metrics           |
 
 ---
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| CLI | [Typer](https://typer.tiangolo.com/) |
+| Layer                      | Technology                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| CLI                        | [Typer](https://typer.tiangolo.com/)                                            |
 | Config & structured output | [Pydantic](https://docs.pydantic.dev/) + [PydanticAI](https://ai.pydantic.dev/) |
-| Persistence | [SQLModel](https://sqlmodel.tiangolo.com/) + SQLite |
-| Dashboard | [Flask](https://flask.palletsprojects.com/) + Jinja2 |
-| Toolchain | [mise](https://mise.jdx.dev/) + [uv](https://github.com/astral-sh/uv) |
+| Persistence                | [SQLModel](https://sqlmodel.tiangolo.com/) + SQLite                             |
+| Dashboard                  | [Flask](https://flask.palletsprojects.com/) + Jinja2                            |
+| Toolchain                  | [mise](https://mise.jdx.dev/) + [uv](https://github.com/astral-sh/uv)           |
 
 ---
 
 ## Documentation
 
-| Doc | Description |
-|---|---|
-| [Architecture](docs/architecture.md) | Module map, data flow, persistence schema |
-| [CLI Reference](docs/cli-reference.md) | Every command, flag, and default |
-| [Configuration](docs/configuration.md) | Full YAML schema with all fields |
-| [Workflows](docs/workflows.md) | Review, eval, enhance internals |
-| [Artifacts](docs/artifacts.md) | Artifact types, formats, discovery, validation |
-| [Dashboard](docs/dashboard.md) | Web UI routes and API endpoints |
-| [Contributing](docs/contributing.md) | Dev setup, testing, conventions |
+| Doc                                    | Description                                    |
+| -------------------------------------- | ---------------------------------------------- |
+| [Architecture](docs/architecture.md)   | Module map, data flow, persistence schema      |
+| [CLI Reference](docs/cli-reference.md) | Every command, flag, and default               |
+| [Configuration](docs/configuration.md) | Full YAML schema with all fields               |
+| [Workflows](docs/workflows.md)         | Review, eval, enhance internals                |
+| [Artifacts](docs/artifacts.md)         | Artifact types, formats, discovery, validation |
+| [Dashboard](docs/dashboard.md)         | Web UI routes and API endpoints                |
+| [Contributing](docs/contributing.md)   | Dev setup, testing, conventions                |
 
 ---
 
