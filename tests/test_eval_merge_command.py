@@ -173,3 +173,31 @@ def test_eval_merge_command_requires_two_unique_targets(
             config=config_path,
             repo=repo_root,
         )
+
+
+def test_eval_merge_command_skill_directory_target_message(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo_root = tmp_path
+    (repo_root / "skills" / "mise").mkdir(parents=True, exist_ok=True)
+    (repo_root / "skills" / "a.md").write_text("alpha\n", encoding="utf-8")
+    config_path = repo_root / "promptbench.yaml"
+    _write_config(config_path)
+
+    monkeypatch.setattr(
+        eval_merge,
+        "generate_eval_seed_tests",
+        lambda **_kwargs: [
+            EvalTest(id="t1", prompt="p1"),
+            EvalTest(id="t2", prompt="p2"),
+            EvalTest(id="t3", prompt="p3"),
+        ],
+    )
+
+    with pytest.raises(Exception, match="contains SKILL.md"):
+        eval_merge.eval_merge_command(
+            artifact_type=ArtifactType.SKILLS,
+            targets=["mise", "a.md"],
+            config=config_path,
+            repo=repo_root,
+        )

@@ -50,7 +50,14 @@ def eval_generate_command(
         cfg.policies.model_random_seed = model_random_seed
 
     project_root = (repo / cfg.project.root).resolve()
-    document = resolve_artifact(project_root, cfg, artifact_type, target)
+    try:
+        document = resolve_artifact(project_root, cfg, artifact_type, target)
+    except (FileNotFoundError, IsADirectoryError) as exc:
+        if artifact_type == ArtifactType.SKILLS:
+            raise typer.BadParameter(
+                f"Invalid skills target '{target}'. For skill packages, pass the skill directory path/name and ensure it contains SKILL.md; optional references may live in references/ or refrences/."
+            ) from exc
+        raise typer.BadParameter(f"Invalid target '{target}': {exc}") from exc
 
     effective_target = target
     if Path(target).is_absolute():

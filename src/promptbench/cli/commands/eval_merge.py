@@ -68,6 +68,28 @@ def _seed_to_yaml_tests(seed_tests: list[EvalTest]) -> list[dict[str, object]]:
     return yaml_tests
 
 
+def _resolve_merge_sources(
+    *,
+    project_root: Path,
+    cfg,
+    artifact_type: ArtifactType,
+    targets: list[str],
+):
+    source_documents = []
+    for target in targets:
+        try:
+            source_documents.append(
+                resolve_artifact(project_root, cfg, artifact_type, target)
+            )
+        except (FileNotFoundError, IsADirectoryError) as exc:
+            if artifact_type == ArtifactType.SKILLS:
+                raise typer.BadParameter(
+                    f"Invalid skills target '{target}'. For skill packages, pass the skill directory path/name and ensure it contains SKILL.md; optional references may live in references/ or refrences/."
+                ) from exc
+            raise typer.BadParameter(f"Invalid target '{target}': {exc}") from exc
+    return source_documents
+
+
 def eval_merge_command(
     *,
     artifact_type: ArtifactType,
@@ -101,10 +123,12 @@ def eval_merge_command(
 
     project_root = (repo / cfg.project.root).resolve()
 
-    source_documents = [
-        resolve_artifact(project_root, cfg, artifact_type, target)
-        for target in unique_targets
-    ]
+    source_documents = _resolve_merge_sources(
+        project_root=project_root,
+        cfg=cfg,
+        artifact_type=artifact_type,
+        targets=unique_targets,
+    )
     suffix = _resolve_suffix([doc.path for doc in source_documents])
     merged_base_name = name or source_documents[0].name
     merged_filename = _merged_filename(merged_base_name, unique_targets, suffix)
